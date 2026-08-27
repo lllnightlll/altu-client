@@ -1,47 +1,61 @@
 package com.example.altu
 
+import com.example.altu.Routes.NavBar
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.altu.ui.theme.AltuTheme
+
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.altu.Routes.Routes
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            AltuTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+            Main()
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Иди нахуй, $name! <3",
-        modifier = modifier
-    )
+fun Main() {
+    val navController = rememberNavController()
+    Column(Modifier.padding(8.dp)) {
+        NavBar(navController = navController)
+        NavHost(navController, startDestination = Routes.Home.route) {
+            composable(Routes.Home.route) { Home() }
+            composable(Routes.Chat.route) { Chat()  }
+            composable(Routes.Settings.route) { Settings()  }
+            composable(Routes.NewContact.route) { NewContact()  }
+        }
+    }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    AltuTheme {
-        Greeting("Android")
-    }
+fun Home(){
+    Text("Home Page", fontSize = 30.sp)
+}
+
+@Composable
+fun Chat(){
+    Text("Chat Page", fontSize = 30.sp)
+}
+
+@Composable
+fun Settings(){
+    Text("Settings Page", fontSize = 30.sp)
+}
+
+@Composable
+fun NewContact(){
+    Text("Contact Page", fontSize = 30.sp)
 }
