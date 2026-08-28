@@ -1,37 +1,59 @@
 package com.example.altu.Routes
 
-import androidx.compose.foundation.clickable
-import androidx.navigation.NavController
-import androidx.compose.runtime.Composable
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-
+import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 @Composable
 fun NavBar(navController: NavController){
-    Row(
-        Modifier.fillMaxWidth().padding(bottom = 8.dp)){
-        Text("Home",
-            Modifier
-                .weight(0.33f)
-                .clickable { navController.navigate(Routes.Home.route) }, fontSize = 22.sp, color= Color(0xFF6650a4))
-        Text("Chat",
-            Modifier
-                .weight(0.33f)
-                .clickable { navController.navigate(Routes.Chat.route) }, fontSize = 22.sp, color= Color(0xFF6650a4))
-        Text("Settings",
-            Modifier
-                .weight(0.33f)
-                .clickable { navController.navigate(Routes.Settings.route) }, fontSize = 22.sp, color= Color(0xFF6650a4))
-        Text("New Contact",
-            Modifier
-                .weight(0.33f)
-                .clickable { navController.navigate(Routes.NewContact.route) }, fontSize = 22.sp, color= Color(0xFF6650a4))
+    NavigationBar(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(0.01.dp, Color(0xFFFFFFFF)),
+        containerColor = Color(0xFF070809)
+    ) {
+        val backStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = backStackEntry?.destination?.route
+
+        BarItems.items.forEach { navItem ->
+            NavigationBarItem(
+                selected = currentRoute == navItem.route,
+                onClick = {
+                    navController.navigate(navItem.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                icon = {
+                    Icon(
+                        imageVector = navItem.image,
+                        contentDescription = navItem.title
+                    )
+                },
+                label = {
+                    Text(text = navItem.title)
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color(0xFFEC407A),
+                    selectedTextColor = Color(0xFFEC407A),
+                    unselectedIconColor = Color(0xFFB0BEC5),
+                    unselectedTextColor = Color(0xFFB0BEC5),
+                    indicatorColor = Color(0xFF1C1E21)
+                )
+            )
+        }
     }
 }
