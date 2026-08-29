@@ -2,6 +2,7 @@ package com.example.altu.Routes
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -21,8 +22,8 @@ fun NavBar(navController: NavController){
     NavigationBar(
         modifier = Modifier
             .fillMaxWidth()
-            .border(0.01.dp, Color(0xFFFFFFFF)),
-        containerColor = Color(0xFF070809)
+            .border(1.dp, Color(0xFFFFFFFF), RoundedCornerShape(24.dp)),
+        containerColor = Color(0xFF070809),
     ) {
         val backStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = backStackEntry?.destination?.route
@@ -49,8 +50,8 @@ fun NavBar(navController: NavController){
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color(0xFFEC407A),
                     selectedTextColor = Color(0xFFEC407A),
-                    unselectedIconColor = Color(0xFFB0BEC5),
-                    unselectedTextColor = Color(0xFFB0BEC5),
+                    unselectedIconColor = Color(0xFFb488a1),
+                    unselectedTextColor = Color(0xFFb488a1),
                     indicatorColor = Color(0xFF1C1E21)
                 )
             )
