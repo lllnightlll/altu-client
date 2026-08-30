@@ -15,7 +15,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.altu.SearchBar.SearchBar
 import com.example.altu.SoundBar.SoundBar
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -60,7 +62,10 @@ fun Main() {
 @Composable
 fun Home() {
     Column(Modifier.fillMaxSize()) {
-        SoundBar(title = "Song name", )
+        SoundBar(title = "The Crowds")
+        SearchBar(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+        )
     }
 }
 
