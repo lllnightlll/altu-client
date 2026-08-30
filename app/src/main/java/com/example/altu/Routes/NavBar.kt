@@ -87,8 +87,8 @@ fun NavBar(navController: NavController) {
                     Text(text = navItem.title)
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color(0xFFEC407A),
-                    selectedTextColor = Color(0xFFEC407A),
+                    selectedIconColor = Color(0xFFFFFFFF),
+                    selectedTextColor = Color(0xFFFFFFFF),
                     unselectedIconColor = Color(0xFFb488a1),
                     unselectedTextColor = Color(0xFFb488a1),
                     indicatorColor = Color(0xFF1C1E21)
