@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.altu.ChatBar.ChatBar
 import com.example.altu.SearchBar.SearchBar
 import com.example.altu.SoundBar.SoundBar
 import androidx.navigation.compose.NavHost
@@ -65,6 +66,11 @@ fun Home() {
         SoundBar(title = "The Crowds")
         SearchBar(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+        )
+        ChatBar(
+            modifier = Modifier
+                .weight(1f)
+                .padding(horizontal = 12.dp)
         )
     }
 }
