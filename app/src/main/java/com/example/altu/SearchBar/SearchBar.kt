@@ -1,7 +1,7 @@
 package com.example.altu.SearchBar
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,13 +28,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.altu.SoundBar.randomShadow
+import com.example.altu.SteppedBorder.steppedBorder
 
 @Composable
 fun SearchBar(
     query: String? = null,
     onQueryChange: (String) -> Unit = {},
     placeholder: String = "Search",
-    modifier: Modifier = Modifier
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier
 ) {
     var innerQuery by remember { mutableStateOf("") }
     val text = query ?: innerQuery
@@ -46,7 +47,8 @@ fun SearchBar(
             .fillMaxWidth()
             .height(48.dp)
             .randomShadow()
-            .border(1.dp, accent, windowShape)
+            //.border(1.dp, accent, windowShape)
+            .steppedBorder(width = 1.dp, color = accent, shape = windowShape)
             .background(Color(0xFF070809), windowShape)
             .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically

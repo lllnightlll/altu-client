@@ -3,6 +3,7 @@ package com.example.altu.Routes
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.GenericShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.altu.SteppedBorder.steppedBorder
 import kotlin.random.Random
 
 @Composable
@@ -60,7 +62,8 @@ fun NavBar(navController: NavController) {
     NavigationBar(
         modifier = Modifier
             .fillMaxWidth()
-            .border(0.25.dp, Color(0xFFFFFFFF), barShape)
+            .steppedBorder(width = 0.5.dp, color = Color(0xFFFFFFFF), shape = RoundedCornerShape(32.dp))
+            //.border(0.25.dp, Color(0xFFFFFFFF), barShape)
             .clip(barShape),
         containerColor = Color(0xFF070809),
     ) {
