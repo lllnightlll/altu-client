@@ -22,12 +22,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.altu.ChatBar.ChatBar
+import com.example.altu.ChatBar.ChatItem
 import com.example.altu.ChatBar.ChatItems
 import com.example.altu.SearchBar.SearchBar
 import com.example.altu.SoundBar.SoundBar
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.altu.Routes.NavBar
 import com.example.altu.Routes.Routes
 
@@ -57,8 +60,19 @@ fun Main() {
             startDestination = Routes.Home.route,
             modifier = Modifier.padding(innerPadding).fillMaxSize()
         ) {
-            composable(Routes.Home.route) { Home() }
-            composable(Routes.Chat.route) { Chat() }
+            composable(Routes.Home.route) {
+                Home(
+                    onChatClick = { chat ->
+                        navController.navigate(Routes.Chat.create(chat.id))
+                    }
+                )
+            }
+            composable(
+                route = Routes.Chat.route,
+                arguments = listOf(navArgument("chatId") { type = NavType.StringType }),
+            ) { entry ->
+                Chat(chatId = entry.arguments?.getString("chatId"))
+            }
             composable(Routes.Settings.route) { Settings() }
             composable(Routes.NewContact.route) { NewContact() }
         }
@@ -66,7 +80,9 @@ fun Main() {
 }
 
 @Composable
-fun Home() {
+fun Home(
+    onChatClick: (ChatItem) -> Unit = {},
+) {
     var query by remember { mutableStateOf("") }
     val filteredChats = remember(query) {
         if (query.isBlank()) {
@@ -85,6 +101,7 @@ fun Home() {
         )
         ChatBar(
             chats = filteredChats,
+            onChatClick = onChatClick,
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 12.dp)
@@ -93,8 +110,12 @@ fun Home() {
 }
 
 @Composable
-fun Chat(){
-    Text("Chat Page", fontSize = 30.sp)
+fun Chat(chatId: String? = null) {
+    val chat = ChatItems.items.find { it.id == chatId }
+    Text(
+        text = chat?.nickname?.let { "Chat with $it" } ?: "Chat Page",
+        fontSize = 30.sp,
+    )
 }
 
 @Composable

@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ChatBar(
     chats: List<ChatItem> = ChatItems.items,
+    onChatClick: (ChatItem) -> Unit = {},
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -19,7 +20,10 @@ fun ChatBar(
         verticalArrangement = Arrangement.spacedBy(1.dp),
     ) {
         items(chats, key = { it.id }) { chat ->
-            ChatRow(chat = chat)
+            ChatRow(
+                chat = chat,
+                onClick = { onChatClick(chat) },
+            )
         }
     }
 }

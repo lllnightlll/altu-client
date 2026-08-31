@@ -1,6 +1,7 @@
 package com.example.altu.ChatBar
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,7 +23,10 @@ import com.example.altu.SoundBar.randomShadow
 import com.example.altu.SteppedBorder.steppedBorder
 
 @Composable
-fun ChatRow(chat: ChatItem) {
+fun ChatRow(
+    chat: ChatItem,
+    onClick: () -> Unit = {},
+) {
     val accent = Color(0xFFACADAC)
     val windowShape = RoundedCornerShape(16.dp)
 
@@ -32,6 +36,7 @@ fun ChatRow(chat: ChatItem) {
             .randomShadow()
             .steppedBorder(width = 1.dp, color = accent, shape = windowShape)
             .background(Color(0xFF070809), windowShape)
+            .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
