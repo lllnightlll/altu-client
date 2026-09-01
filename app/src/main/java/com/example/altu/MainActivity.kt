@@ -50,10 +50,17 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Main() {
     val navController = rememberNavController()
+    var lastOpenChatId by remember { mutableStateOf<String?>(null) }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFF6650a4),
-        bottomBar = {NavBar(navController = navController)},
+        bottomBar = {
+            NavBar(
+                navController = navController,
+                lastOpenChatId = lastOpenChatId,
+                onReturnToHomeList = { lastOpenChatId = null },
+            )
+        },
     ) { innerPadding ->
         NavHost(
             navController,
@@ -63,6 +70,7 @@ fun Main() {
             composable(Routes.Home.route) {
                 Home(
                     onChatClick = { chat ->
+                        lastOpenChatId = chat.id
                         navController.navigate(Routes.Chat.create(chat.id))
                     }
                 )

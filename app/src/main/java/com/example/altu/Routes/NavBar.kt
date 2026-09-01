@@ -29,7 +29,11 @@ import com.example.altu.SteppedBorder.steppedBorder
 import kotlin.random.Random
 
 @Composable
-fun NavBar(navController: NavController) {
+fun NavBar(
+    navController: NavController,
+    lastOpenChatId: String? = null,
+    onReturnToHomeList: () -> Unit = {},
+) {
     val stepHeights = remember {
         List(5) { Random.nextInt(2, 11).toFloat() }
     }
@@ -71,13 +75,54 @@ fun NavBar(navController: NavController) {
         val currentRoute = backStackEntry?.destination?.route
 
         BarItems.items.forEach { navItem ->
+            val isHomeTab = navItem.route == Routes.Home.route
+            val selected = when {
+                isHomeTab -> currentRoute == Routes.Home.route || currentRoute?.startsWith("chat/") == true
+                else -> currentRoute == navItem.route
+            }
+
             NavigationBarItem(
-                selected = currentRoute == navItem.route,
+                selected = selected,
                 onClick = {
-                    navController.navigate(navItem.route) {
-                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+                    if (isHomeTab) {
+                        when {
+                            currentRoute?.startsWith("chat/") == true -> {
+                                navController.popBackStack(
+                                    route = Routes.Home.route,
+                                    inclusive = false,
+                                    saveState = true,
+                                )
+                                onReturnToHomeList()
+                            }
+                            currentRoute == Routes.Home.route -> Unit
+                            lastOpenChatId != null -> {
+                                navController.navigate(Routes.Chat.create(lastOpenChatId)) {
+                                    popUpTo(Routes.Home.route) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                            else -> {
+                                val returnedToHome = navController.popBackStack(
+                                    route = Routes.Home.route,
+                                    inclusive = false,
+                                    saveState = true,
+                                )
+                                if (!returnedToHome) {
+                                    navController.navigate(Routes.Home.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        navController.navigate(navItem.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 },
                 icon = {
