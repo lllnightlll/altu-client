@@ -3,8 +3,8 @@ package com.example.altu.SoundBar
 import android.annotation.SuppressLint
 import android.media.AudioAttributes
 import android.media.MediaPlayer
-import androidx.annotation.DrawableRes
-import androidx.annotation.RawRes
+import android.os.Handler
+import android.os.Looper
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +36,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -49,43 +50,73 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.altu.R
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SoundBar(
-    title: String = "The Crowds",
-    @DrawableRes coverRes: Int = R.drawable.sound_icon,
-    @RawRes trackRes: Int = R.raw.the_crowds,
+    tracks: List<Track> = Playlist.tracks,
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
+    val playlist = tracks.ifEmpty { Playlist.tracks }
+
+    var trackIndex by remember { mutableIntStateOf(0) }
     var isPlaying by remember { mutableStateOf(false) }
     var isSeeking by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
+    var playerVersion by remember { mutableIntStateOf(0) }
 
-    val player = remember(context, trackRes) {
-        MediaPlayer.create(context, trackRes)?.apply {
+    val currentTrack = playlist[trackIndex.coerceIn(0, playlist.lastIndex)]
+    val mainHandler = remember { Handler(Looper.getMainLooper()) }
+
+    val player = remember(context, currentTrack.trackRes, playerVersion) {
+        MediaPlayer.create(context, currentTrack.trackRes)?.apply {
             setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_MEDIA)
                     .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                     .build()
             )
+            isLooping = false
+        }
+    }
+
+    fun goToTrack(index: Int, autoPlay: Boolean) {
+        val nextIndex = when {
+            playlist.isEmpty() -> 0
+            else -> ((index % playlist.size) + playlist.size) % playlist.size
+        }
+        progress = 0f
+        trackIndex = nextIndex
+        playerVersion++
+        isPlaying = autoPlay
+    }
+
+    fun playNext(autoPlay: Boolean = isPlaying) {
+        goToTrack(trackIndex + 1, autoPlay = autoPlay)
+    }
+
+    fun playPrevious() {
+        val mediaPlayer = player
+        if (mediaPlayer != null && mediaPlayer.currentPosition > 3000) {
+            mediaPlayer.seekTo(0)
+            progress = 0f
+        } else {
+            goToTrack(trackIndex - 1, autoPlay = isPlaying)
         }
     }
 
     DisposableEffect(player) {
         player?.setOnCompletionListener {
-            isPlaying = false
-            progress = 0f
-            player.seekTo(0)
+            mainHandler.post {
+                playNext(autoPlay = true)
+            }
         }
         onDispose {
             player?.setOnCompletionListener(null)
             if (player?.isPlaying == true) {
-                player.stop()
+                player.pause()
             }
             player?.release()
         }
@@ -93,18 +124,26 @@ fun SoundBar(
 
     LaunchedEffect(isPlaying, player) {
         val mediaPlayer = player ?: return@LaunchedEffect
-        if (isPlaying) {
-            mediaPlayer.start()
-            while (isPlaying) {
-                val duration = mediaPlayer.duration
-                if (!isSeeking && duration > 0) {
-                    progress = mediaPlayer.currentPosition.toFloat() / duration
-                }
-                delay(80)
-                if (!mediaPlayer.isPlaying) break
+        if (!isPlaying) {
+            if (mediaPlayer.isPlaying) {
+                mediaPlayer.pause()
             }
-        } else if (mediaPlayer.isPlaying) {
-            mediaPlayer.pause()
+            return@LaunchedEffect
+        }
+
+        if (!mediaPlayer.isPlaying) {
+            mediaPlayer.start()
+        }
+
+        while (isPlaying) {
+            if (!mediaPlayer.isPlaying) {
+                break
+            }
+            val duration = mediaPlayer.duration
+            if (!isSeeking && duration > 0) {
+                progress = mediaPlayer.currentPosition.toFloat() / duration
+            }
+            delay(80)
         }
     }
 
@@ -132,8 +171,8 @@ fun SoundBar(
                 .iconShape(edgeInset = 7.dp)
         ) {
             Image(
-                painter = painterResource(coverRes),
-                contentDescription = title,
+                painter = painterResource(currentTrack.coverRes),
+                contentDescription = currentTrack.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .padding(7.dp)
@@ -149,7 +188,7 @@ fun SoundBar(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = title,
+                text = currentTrack.title,
                 color = Color(0xFFACADAC),
                 fontSize = 14.sp,
                 maxLines = 1,
@@ -200,7 +239,7 @@ fun SoundBar(
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
             IconButton(
-                onClick = { seekToFraction(0f) },
+                onClick = { playPrevious() },
                 modifier = Modifier.size(36.dp).randomShadow()
             ) {
                 Icon(
@@ -220,7 +259,7 @@ fun SoundBar(
                 )
             }
             IconButton(
-                onClick = { seekToFraction(0f) },
+                onClick = { playNext(autoPlay = isPlaying) },
                 modifier = Modifier.size(36.dp).randomShadow()
             ) {
                 Icon(

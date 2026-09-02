@@ -101,7 +101,7 @@ fun Home(
     }
 
     Column(Modifier.fillMaxSize()) {
-        SoundBar(title = "The Crowds")
+        SoundBar()
         SearchBar(
             query = query,
             onQueryChange = { query = it },
