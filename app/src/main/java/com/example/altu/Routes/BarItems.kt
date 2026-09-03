@@ -8,7 +8,7 @@ import androidx.compose.material.icons.filled.Settings
 object BarItems {
     val items = listOf(
         BarItem(
-            title = "Home",
+            title = "Chats",
             image = Icons.Filled.Home,
             route = Routes.Home.route
         ),

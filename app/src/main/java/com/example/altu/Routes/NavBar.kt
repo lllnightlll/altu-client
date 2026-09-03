@@ -126,10 +126,14 @@ fun NavBar(
                     }
                 },
                 icon = {
-                    Icon(
-                        imageVector = navItem.image,
-                        contentDescription = navItem.title
-                    )
+                    if (isHomeTab) {
+                        HomeTabIcon(selected = selected)
+                    } else {
+                        Icon(
+                            imageVector = navItem.image,
+                            contentDescription = navItem.title
+                        )
+                    }
                 },
                 label = {
                     Text(text = navItem.title)
