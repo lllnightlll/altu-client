@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.altu.ChatBar.ChatItems
 import com.example.altu.SteppedBorder.steppedBorder
 import kotlin.random.Random
 
@@ -127,7 +128,10 @@ fun NavBar(
                 },
                 icon = {
                     when {
-                        isHomeTab -> HomeTabIcon(selected = selected)
+                        isHomeTab -> ChatsTabIcon(
+                            selected = selected,
+                            unreadCount = ChatItems.items.sumOf { it.unreadCount },
+                        )
                         navItem.route == Routes.Settings.route -> SettingsTabIcon(selected = selected)
                         else -> Icon(
                             imageVector = navItem.image,
