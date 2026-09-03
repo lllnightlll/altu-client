@@ -126,10 +126,10 @@ fun NavBar(
                     }
                 },
                 icon = {
-                    if (isHomeTab) {
-                        HomeTabIcon(selected = selected)
-                    } else {
-                        Icon(
+                    when {
+                        isHomeTab -> HomeTabIcon(selected = selected)
+                        navItem.route == Routes.Settings.route -> SettingsTabIcon(selected = selected)
+                        else -> Icon(
                             imageVector = navItem.image,
                             contentDescription = navItem.title
                         )
