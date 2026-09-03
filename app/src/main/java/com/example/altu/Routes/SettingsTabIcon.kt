@@ -5,177 +5,102 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlin.math.cos
+import kotlin.math.min
+import kotlin.math.sin
 
 @Composable
 fun SettingsTabIcon(
     selected: Boolean,
     modifier: Modifier = Modifier,
-    size: Dp = 30.dp,
+    size: Dp = 28.dp,
 ) {
+    val strokeColor = if (selected) Color(0xFFD4B8D8) else Color(0xFFb488a1)
+
     Canvas(modifier.size(size)) {
         val w = this.size.width
         val h = this.size.height
-
-        val metal = if (selected) Color(0xFFCFD4DA) else Color(0xFF8E949B)
-        val metalDark = if (selected) Color(0xFF6B7078) else Color(0xFF4A4E54)
-        val wingFill = if (selected) Color(0xFF2A2D33) else Color(0xFF1A1C20)
-        val heartFill = Brush.radialGradient(
-            colors = if (selected) {
-                listOf(Color(0xFF3A3D45), Color(0xFF15171B), Color(0xFF050607))
-            } else {
-                listOf(Color(0xFF2A2C31), Color(0xFF101214), Color(0xFF050607))
-            },
-            center = Offset(w * 0.5f, h * 0.42f),
-            radius = w * 0.55f,
-        )
-
-        drawWing(
-            left = true,
-            width = w,
-            height = h,
-            fill = wingFill,
-            bone = metalDark,
-        )
-        drawWing(
-            left = false,
-            width = w,
-            height = h,
-            fill = wingFill,
-            bone = metalDark,
-        )
-
-        val heart = settingsHeartPath(w, h)
-        drawPath(heart, brush = heartFill)
-        drawPath(
-            path = heart,
-            color = metal,
-            style = Stroke(
-                width = 1.8.dp.toPx(),
-                cap = StrokeCap.Round,
-                join = StrokeJoin.Round,
-            ),
-        )
-
-        val studs = listOf(
-            Offset(w * 0.20f, h * 0.22f),
-            Offset(w * 0.50f, h * 0.16f),
-            Offset(w * 0.80f, h * 0.22f),
-            Offset(w * 0.10f, h * 0.48f),
-            Offset(w * 0.90f, h * 0.48f),
-            Offset(w * 0.30f, h * 0.78f),
-            Offset(w * 0.70f, h * 0.78f),
-            Offset(w * 0.50f, h * 0.90f),
-        )
-        studs.forEach { center ->
-            drawCircle(color = metalDark, radius = 1.1.dp.toPx(), center = center)
-            drawCircle(color = metal, radius = 0.55.dp.toPx(), center = center)
-        }
-
         val cx = w * 0.5f
-        val cy = h * 0.48f
-        val crossColor = if (selected) Color(0xFFE8EAF0) else Color(0xFFACADAC)
-        val armW = w * 0.055f
-        val stemH = h * 0.28f
-        val crossArmW = w * 0.20f
-        val crossArmH = h * 0.055f
+        val cy = h * 0.5f
+        val stroke = Stroke(
+            width = 1.dp.toPx(),
+            cap = StrokeCap.Round,
+            join = StrokeJoin.Round,
+        )
 
-        drawPath(
-            Path().apply {
-                moveTo(cx - armW / 2f, cy - stemH * 0.48f)
-                lineTo(cx + armW / 2f, cy - stemH * 0.48f)
-                lineTo(cx + armW / 2f, cy + stemH * 0.52f)
-                lineTo(cx - armW / 2f, cy + stemH * 0.52f)
-                close()
-            },
-            color = crossColor,
-        )
-        drawPath(
-            Path().apply {
-                moveTo(cx - crossArmW / 2f, cy - crossArmH * 0.2f)
-                lineTo(cx + crossArmW / 2f, cy - crossArmH * 0.2f)
-                lineTo(cx + crossArmW / 2f, cy + crossArmH * 0.8f)
-                lineTo(cx - crossArmW / 2f, cy + crossArmH * 0.8f)
-                close()
-            },
-            color = crossColor,
-        )
+        drawPath(gearOutlinePath(cx, cy, min(w, h)), strokeColor, style = stroke)
+        drawPath(heartOutlinePath(w, h), strokeColor, style = stroke)
     }
 }
 
-private fun settingsHeartPath(width: Float, height: Float): Path = Path().apply {
-    val left = width * 0.10f
-    val right = width * 0.90f
-    val bottom = height * 0.94f
-    val midX = width * 0.5f
-    val midY = height * 0.36f
+private fun gearOutlinePath(cx: Float, cy: Float, size: Float): Path {
+    val outerR = size * 0.46f
+    val innerR = size * 0.34f
+    val teeth = 8
+    val toothHalf = Math.PI / teeth / 2.4
+    val path = Path()
 
-    moveTo(midX, midY)
+    for (i in 0 until teeth) {
+        val a = -Math.PI / 2.0 + i * (2.0 * Math.PI / teeth)
+        val a0 = a - toothHalf
+        val a1 = a - toothHalf * 0.35
+        val a2 = a + toothHalf * 0.35
+        val a3 = a + toothHalf
+
+        val p0 = polar(cx, cy, innerR, a0)
+        val p1 = polar(cx, cy, outerR, a1)
+        val p2 = polar(cx, cy, outerR, a2)
+        val p3 = polar(cx, cy, innerR, a3)
+
+        if (i == 0) path.moveTo(p0.x, p0.y) else path.lineTo(p0.x, p0.y)
+        path.lineTo(p1.x, p1.y)
+        path.lineTo(p2.x, p2.y)
+        path.lineTo(p3.x, p3.y)
+    }
+    path.close()
+    return path
+}
+
+private fun polar(cx: Float, cy: Float, r: Float, angle: Double): Offset =
+    Offset(
+        cx + (cos(angle) * r).toFloat(),
+        cy + (sin(angle) * r).toFloat(),
+    )
+
+private fun heartOutlinePath(width: Float, height: Float): Path = Path().apply {
+    val left = width * 0.32f
+    val right = width * 0.68f
+    val bottom = height * 0.72f
+    val midX = width * 0.5f
+    val cleftY = height * 0.42f
+
+    moveTo(midX, cleftY)
     cubicTo(
-        width * 0.22f, height * 0.04f,
-        left, height * 0.18f,
-        left, height * 0.46f,
+        width * 0.38f, height * 0.26f,
+        left, height * 0.34f,
+        left, height * 0.48f,
     )
     cubicTo(
-        left, height * 0.68f,
-        width * 0.32f, height * 0.84f,
+        left, height * 0.60f,
+        width * 0.40f, height * 0.68f,
         midX, bottom,
     )
     cubicTo(
-        width * 0.68f, height * 0.84f,
-        right, height * 0.68f,
-        right, height * 0.46f,
+        width * 0.60f, height * 0.68f,
+        right, height * 0.60f,
+        right, height * 0.48f,
     )
     cubicTo(
-        right, height * 0.18f,
-        width * 0.78f, height * 0.04f,
-        midX, midY,
+        right, height * 0.34f,
+        width * 0.62f, height * 0.26f,
+        midX, cleftY,
     )
     close()
-}
-
-private fun DrawScope.drawWing(
-    left: Boolean,
-    width: Float,
-    height: Float,
-    fill: Color,
-    bone: Color,
-) {
-    val sign = if (left) -1f else 1f
-    val rootX = width * 0.5f + sign * width * 0.28f
-    val rootY = height * 0.28f
-    val tipX = width * 0.5f + sign * width * 0.50f
-    val tipY = height * 0.10f
-    val midX = width * 0.5f + sign * width * 0.46f
-    val midY = height * 0.34f
-    val lowerX = width * 0.5f + sign * width * 0.34f
-    val lowerY = height * 0.42f
-
-    val membrane = Path().apply {
-        moveTo(rootX, rootY)
-        lineTo(tipX, tipY)
-        quadraticTo(midX, height * 0.20f, midX, midY)
-        quadraticTo(width * 0.5f + sign * width * 0.36f, height * 0.38f, lowerX, lowerY)
-        quadraticTo(width * 0.5f + sign * width * 0.24f, height * 0.36f, rootX, rootY + height * 0.08f)
-        close()
-    }
-    drawPath(membrane, fill)
-    drawPath(
-        membrane,
-        bone,
-        style = Stroke(width = 1.1.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round),
-    )
-
-    // wing bones
-    drawLine(bone, Offset(rootX, rootY), Offset(tipX, tipY), strokeWidth = 1.4.dp.toPx(), cap = StrokeCap.Round)
-    drawLine(bone, Offset(rootX, rootY), Offset(midX, midY), strokeWidth = 1.1.dp.toPx(), cap = StrokeCap.Round)
-    drawLine(bone, Offset(rootX, rootY + height * 0.04f), Offset(lowerX, lowerY), strokeWidth = 1.0.dp.toPx(), cap = StrokeCap.Round)
 }
