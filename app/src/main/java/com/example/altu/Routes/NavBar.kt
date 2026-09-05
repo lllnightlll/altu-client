@@ -22,11 +22,13 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.altu.ChatBar.ChatItems
 import com.example.altu.SteppedBorder.steppedBorder
+import com.example.altu.ui.theme.GothicFont
 import kotlin.random.Random
 
 @Composable
@@ -140,7 +142,11 @@ fun NavBar(
                     }
                 },
                 label = {
-                    Text(text = navItem.title)
+                    Text(
+                        text = navItem.title,
+                        fontFamily = GothicFont,
+                        fontSize = 21.sp,
+                    )
                 },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = Color(0xFFFFFFFF),

@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.altu.SoundBar.randomShadow
 import com.example.altu.SteppedBorder.steppedBorder
+import com.example.altu.ui.theme.GothicFont
 
 @Composable
 fun SearchBar(
@@ -68,13 +69,18 @@ fun SearchBar(
             },
             singleLine = true,
             cursorBrush = SolidColor(accent),
-            textStyle = TextStyle(color = accent, fontSize = 14.sp),
+            textStyle = TextStyle(color = accent, fontFamily = GothicFont, fontSize = 24.sp),
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 10.dp),
             decorationBox = { innerTextField ->
                 if (text.isEmpty()) {
-                    Text(placeholder, color = accent.copy(alpha = 0.45f), fontSize = 14.sp)
+                    Text(
+                        placeholder,
+                        color = accent.copy(alpha = 0.45f),
+                        fontFamily = GothicFont,
+                        fontSize = 24.sp,
+                    )
                 }
                 innerTextField()
             }

@@ -36,6 +36,8 @@ import com.example.altu.Routes.Routes
 import com.example.altu.SearchBar.SearchBar
 import com.example.altu.SoundBar.MusicController
 import com.example.altu.SoundBar.SoundBar
+import com.example.altu.ui.theme.AltuTheme
+import com.example.altu.ui.theme.GothicFont
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -44,7 +46,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         window.isNavigationBarContrastEnforced = false
         setContent {
-            Main()
+            AltuTheme(darkTheme = true, dynamicColor = false) {
+                Main()
+            }
         }
     }
 }
@@ -134,16 +138,17 @@ fun Chat(chatId: String? = null) {
     val chat = ChatItems.items.find { it.id == chatId }
     Text(
         text = chat?.nickname?.let { "Chat with $it" } ?: "Chat Page",
-        fontSize = 30.sp,
+        fontFamily = GothicFont,
+        fontSize = 51.sp,
     )
 }
 
 @Composable
 fun Settings() {
-    Text("Settings Page", fontSize = 30.sp)
+    Text("Settings Page", fontFamily = GothicFont, fontSize = 51.sp)
 }
 
 @Composable
 fun NewContact() {
-    Text("Contact Page", fontSize = 30.sp)
+    Text("Contact Page", fontFamily = GothicFont, fontSize = 51.sp)
 }

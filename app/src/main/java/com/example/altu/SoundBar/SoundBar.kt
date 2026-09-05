@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import com.example.altu.ui.theme.GothicFont
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +94,8 @@ fun SoundBar(
             Text(
                 text = currentTrack.title,
                 color = Color(0xFFACADAC),
-                fontSize = 14.sp,
+                fontFamily = GothicFont,
+                fontSize = 24.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.randomShadow()

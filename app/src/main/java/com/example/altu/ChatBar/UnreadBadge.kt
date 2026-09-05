@@ -12,12 +12,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.altu.ui.theme.GothicFont
 
 @Composable
 fun UnreadBadge(count: Int) {
     Box(
         modifier = Modifier
-            .size(18.dp)
+            .size(20.dp)
             .clip(CircleShape)
             .background(Color(0xFFEC407A)),
         contentAlignment = Alignment.Center,
@@ -25,7 +26,8 @@ fun UnreadBadge(count: Int) {
         Text(
             text = if (count > 99) "99+" else count.toString(),
             color = Color.White,
-            fontSize = 10.sp,
+            fontFamily = GothicFont,
+            fontSize = 16.5.sp,
         )
     }
 }

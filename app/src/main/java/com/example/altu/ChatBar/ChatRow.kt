@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.altu.SoundBar.randomShadow
 import com.example.altu.SteppedBorder.steppedBorder
+import com.example.altu.ui.theme.GothicFont
 
 @Composable
 fun ChatRow(
@@ -52,7 +53,8 @@ fun ChatRow(
         Text(
             text = chat.nickname,
             color = accent,
-            fontSize = 15.sp,
+            fontFamily = GothicFont,
+            fontSize = 25.5.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f),
@@ -66,7 +68,8 @@ fun ChatRow(
             Text(
                 text = chat.time,
                 color = accent.copy(alpha = 0.7f),
-                fontSize = 12.sp,
+                fontFamily = GothicFont,
+                fontSize = 21.sp,
             )
             Spacer(modifier = Modifier.weight(1f))
             if (chat.unreadCount > 0) {
