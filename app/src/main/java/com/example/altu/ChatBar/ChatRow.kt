@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -63,13 +64,16 @@ fun ChatRow(
         Column(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.height(54.dp),
+            modifier = Modifier
+                .height(54.dp)
+                .align(Alignment.Top),
         ) {
             Text(
                 text = chat.time,
                 color = accent.copy(alpha = 0.7f),
                 fontFamily = GothicFont,
-                fontSize = 21.sp,
+                fontSize = 16.sp,
+                modifier = Modifier.offset(y = (-12).dp),
             )
             Spacer(modifier = Modifier.weight(1f))
             if (chat.unreadCount > 0) {
