@@ -1,7 +1,11 @@
 package com.example.altu.Routes
 
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -12,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
@@ -23,6 +28,7 @@ import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -30,6 +36,10 @@ import com.example.altu.ChatBar.ChatItems
 import com.example.altu.SteppedBorder.steppedBorder
 import com.example.altu.ui.theme.GothicFont
 import kotlin.random.Random
+
+private val CrossHeight = 128.dp
+/** Crossbar sits ~38% down from the tip of the detailed asset. */
+private const val CrossbarFromTop = 0.38f
 
 @Composable
 fun NavBar(
@@ -66,96 +76,158 @@ fun NavBar(
         op(stepped, rounded, PathOperation.Intersect)
     }
 
-    NavigationBar(
-        modifier = Modifier
-            .fillMaxWidth()
-            .steppedBorder(width = 0.5.dp, color = Color(0xFFFFFFFF), shape = RoundedCornerShape(32.dp))
-            //.border(0.25.dp, Color(0xFFFFFFFF), barShape)
-            .clip(barShape),
-        containerColor = Color(0xFF070809),
-    ) {
-        val backStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = backStackEntry?.destination?.route
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
+    val contactSelected = currentRoute == Routes.NewContact.route
+    val crossAbove = CrossHeight * CrossbarFromTop
+    val crossNudgeDown = CrossHeight * 0.04f
 
-        BarItems.items.forEach { navItem ->
-            val isHomeTab = navItem.route == Routes.Home.route
-            val selected = when {
-                isHomeTab -> currentRoute == Routes.Home.route || currentRoute?.startsWith("chat/") == true
-                else -> currentRoute == navItem.route
-            }
-
-            NavigationBarItem(
-                selected = selected,
-                onClick = {
-                    if (isHomeTab) {
-                        when {
-                            currentRoute?.startsWith("chat/") == true -> {
-                                navController.popBackStack(
-                                    route = Routes.Home.route,
-                                    inclusive = false,
-                                    saveState = true,
-                                )
-                                onReturnToHomeList()
-                            }
-                            currentRoute == Routes.Home.route -> Unit
-                            lastOpenChatId != null -> {
-                                navController.navigate(Routes.Chat.create(lastOpenChatId)) {
-                                    popUpTo(Routes.Home.route) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            }
-                            else -> {
-                                val returnedToHome = navController.popBackStack(
-                                    route = Routes.Home.route,
-                                    inclusive = false,
-                                    saveState = true,
-                                )
-                                if (!returnedToHome) {
-                                    navController.navigate(Routes.Home.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        navController.navigate(navItem.route) {
-                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
-                },
-                icon = {
-                    when {
-                        isHomeTab -> ChatsTabIcon(
-                            selected = selected,
-                            unreadCount = ChatItems.items.sumOf { it.unreadCount },
-                        )
-                        navItem.route == Routes.Settings.route -> SettingsTabIcon(selected = selected)
-                        else -> Icon(
-                            imageVector = navItem.image,
-                            contentDescription = navItem.title
-                        )
-                    }
-                },
-                label = {
-                    Text(
-                        text = navItem.title,
-                        fontFamily = GothicFont,
-                        fontSize = 21.sp,
-                    )
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color(0xFFFFFFFF),
-                    selectedTextColor = Color(0xFFFFFFFF),
-                    unselectedIconColor = Color(0xFFb488a1),
-                    unselectedTextColor = Color(0xFFb488a1),
-                    indicatorColor = Color(0xFF1C1E21)
+    Box(modifier = Modifier.fillMaxWidth()) {
+        NavigationBar(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .steppedBorder(
+                    width = 0.5.dp,
+                    color = Color(0xFFFFFFFF),
+                    shape = RoundedCornerShape(32.dp),
                 )
-            )
+                .clip(barShape),
+            containerColor = Color(0xFF070809),
+        ) {
+            BarItems.items.forEach { navItem ->
+                val isHomeTab = navItem.route == Routes.Home.route
+                val isContactTab = navItem.route == Routes.NewContact.route
+                val selected = when {
+                    isHomeTab ->
+                        currentRoute == Routes.Home.route ||
+                            currentRoute?.startsWith("chat/") == true
+                    else -> currentRoute == navItem.route
+                }
+
+                NavigationBarItem(
+                    selected = selected,
+                    onClick = {
+                        navigateTab(
+                            navController = navController,
+                            navItem = navItem,
+                            isHomeTab = isHomeTab,
+                            currentRoute = currentRoute,
+                            lastOpenChatId = lastOpenChatId,
+                            onReturnToHomeList = onReturnToHomeList,
+                        )
+                    },
+                    icon = {
+                        when {
+                            isHomeTab -> ChatsTabIcon(
+                                selected = selected,
+                                unreadCount = ChatItems.items.sumOf { it.unreadCount },
+                            )
+                            isContactTab -> {
+                                // Placeholder — real cross is the overlay above.
+                                Box(modifier = Modifier.size(28.dp))
+                            }
+                            navItem.route == Routes.Settings.route ->
+                                SettingsTabIcon(selected = selected)
+                            else -> Icon(
+                                imageVector = navItem.image,
+                                contentDescription = navItem.title,
+                            )
+                        }
+                    },
+                    label = {
+                        if (!isContactTab) {
+                            Text(
+                                text = navItem.title,
+                                fontFamily = GothicFont,
+                                fontSize = 21.sp,
+                            )
+                        }
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = Color(0xFFFFFFFF),
+                        selectedTextColor = Color(0xFFFFFFFF),
+                        unselectedIconColor = Color(0xFFb488a1),
+                        unselectedTextColor = Color(0xFFb488a1),
+                        indicatorColor = if (isContactTab) Color.Transparent else Color(0xFF1C1E21),
+                    ),
+                )
+            }
+        }
+
+        // Cross on top of the bar; tip sticks above, crossbar on the menu line.
+        // Hit target = icon bounds only (no ripple / no full-width bar).
+        ContactTabIcon(
+            selected = contactSelected,
+            size = CrossHeight,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .offset(y = -crossAbove + crossNudgeDown)
+                .zIndex(1f)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = {
+                        navigateTab(
+                            navController = navController,
+                            navItem = BarItems.items.first { it.route == Routes.NewContact.route },
+                            isHomeTab = false,
+                            currentRoute = currentRoute,
+                            lastOpenChatId = lastOpenChatId,
+                            onReturnToHomeList = onReturnToHomeList,
+                        )
+                    },
+                ),
+        )
+    }
+}
+
+private fun navigateTab(
+    navController: NavController,
+    navItem: BarItem,
+    isHomeTab: Boolean,
+    currentRoute: String?,
+    lastOpenChatId: String?,
+    onReturnToHomeList: () -> Unit,
+) {
+    if (isHomeTab) {
+        when {
+            currentRoute?.startsWith("chat/") == true -> {
+                navController.popBackStack(
+                    route = Routes.Home.route,
+                    inclusive = false,
+                    saveState = true,
+                )
+                onReturnToHomeList()
+            }
+            currentRoute == Routes.Home.route -> Unit
+            lastOpenChatId != null -> {
+                navController.navigate(Routes.Chat.create(lastOpenChatId)) {
+                    popUpTo(Routes.Home.route) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+            else -> {
+                val returnedToHome = navController.popBackStack(
+                    route = Routes.Home.route,
+                    inclusive = false,
+                    saveState = true,
+                )
+                if (!returnedToHome) {
+                    navController.navigate(Routes.Home.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            }
+        }
+    } else {
+        navController.navigate(navItem.route) {
+            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
         }
     }
 }
