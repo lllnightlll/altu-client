@@ -28,9 +28,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.altu.ChatBar.Chat.TopChatBar
 import com.example.altu.ChatBar.ChatBar
 import com.example.altu.ChatBar.ChatItem
 import com.example.altu.ChatBar.ChatItems
+import com.example.altu.R
 import com.example.altu.Routes.NavBar
 import com.example.altu.Routes.Routes
 import com.example.altu.SearchBar.SearchBar
@@ -136,11 +138,17 @@ fun Home(
 @Composable
 fun Chat(chatId: String? = null) {
     val chat = ChatItems.items.find { it.id == chatId }
-    Text(
-        text = chat?.nickname?.let { "Chat with $it" } ?: "Chat Page",
-        fontFamily = GothicFont,
-        fontSize = 51.sp,
-    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        TopChatBar(
+            nickname = chat?.nickname ?: "Chat",
+            avatarRes = chat?.avatarRes ?: R.drawable.sound_icon,
+        )
+    }
 }
 
 @Composable
