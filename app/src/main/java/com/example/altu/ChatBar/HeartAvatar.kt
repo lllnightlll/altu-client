@@ -74,6 +74,7 @@ fun HeartAvatar(
     modifier: Modifier = Modifier,
     height: Dp = 54.dp,
     widthRatio: Float = 1.45f,
+    borderWidth: Dp = 3.5.dp,
 ) {
     val heartShape = remember {
         GenericShape { s, _ ->
@@ -88,7 +89,7 @@ fun HeartAvatar(
         modifier = modifier
             .height(height)
             .aspectRatio(widthRatio)
-            .heartFrame(diamondIndices)
+            .heartFrame(diamondIndices, borderWidth)
     ) {
         Image(
             painter = painterResource(avatarRes),
@@ -104,7 +105,7 @@ fun HeartAvatar(
 
 private fun Modifier.heartFrame(
     diamondIndices: List<Int>,
-    borderWidth: Dp = 3.5.dp,
+    borderWidth: Dp,
     lineColor: Color = Color(0xFFACADAC),
 ): Modifier = drawWithContent {
     drawContent()
