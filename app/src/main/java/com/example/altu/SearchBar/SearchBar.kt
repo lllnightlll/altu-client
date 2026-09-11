@@ -2,8 +2,11 @@ package com.example.altu.SearchBar
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,7 +27,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.altu.SoundBar.randomShadow
@@ -42,13 +47,24 @@ fun SearchBar(
     val text = query ?: innerQuery
     val windowShape = RoundedCornerShape(32.dp)
     val accent = Color(0xFFACADAC)
+    val fieldStyle = TextStyle(
+        color = accent,
+        fontFamily = GothicFont,
+        fontSize = 24.sp,
+        lineHeight = 28.sp,
+        platformStyle = PlatformTextStyle(includeFontPadding = false),
+        lineHeightStyle = LineHeightStyle(
+            alignment = LineHeightStyle.Alignment.Center,
+            trim = LineHeightStyle.Trim.Both,
+        ),
+    )
 
     Row(
         modifier
             .fillMaxWidth()
             .height(48.dp)
             .randomShadow()
-            //.border(1.dp, accent, windowShape)
+             //.border(1.dp, accent, windowShape)
             .steppedBorder(width = 1.dp, color = accent, shape = windowShape)
             .background(Color(0xFF070809), windowShape)
             .padding(horizontal = 10.dp),
@@ -69,20 +85,24 @@ fun SearchBar(
             },
             singleLine = true,
             cursorBrush = SolidColor(accent),
-            textStyle = TextStyle(color = accent, fontFamily = GothicFont, fontSize = 24.sp),
+            textStyle = fieldStyle,
             modifier = Modifier
                 .weight(1f)
+                .fillMaxHeight()
                 .padding(horizontal = 10.dp),
             decorationBox = { innerTextField ->
-                if (text.isEmpty()) {
-                    Text(
-                        placeholder,
-                        color = accent.copy(alpha = 0.45f),
-                        fontFamily = GothicFont,
-                        fontSize = 24.sp,
-                    )
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.CenterStart,
+                ) {
+                    if (text.isEmpty()) {
+                        Text(
+                            text = placeholder,
+                            style = fieldStyle.copy(color = accent.copy(alpha = 0.45f)),
+                        )
+                    }
+                    innerTextField()
                 }
-                innerTextField()
             }
         )
         GothicCross(color = accent)
