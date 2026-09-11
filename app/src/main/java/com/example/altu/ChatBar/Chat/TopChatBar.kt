@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +34,7 @@ fun TopChatBar(
     nickname: String,
     @DrawableRes avatarRes: Int = R.drawable.sound_icon,
     onHomeClick: () -> Unit = {},
+    onFindNearestMessageClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val accent = Color(0xFFACADAC)
@@ -46,7 +48,7 @@ fun TopChatBar(
             modifier = Modifier
                 .size(40.dp)
                 .randomShadow()
-                .steppedBorder(width = 1.dp, color = accent, shape = barShape)
+                .steppedBorder(width = 1.dp, color = accent, shape = CircleShape)
                 .background(Color(0xFF070809), CircleShape)
                 .clickable(onClick = onHomeClick),
             contentAlignment = Alignment.Center,
@@ -88,6 +90,25 @@ fun TopChatBar(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
+            )
+        }
+
+        Spacer(modifier = Modifier.size(8.dp))
+
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .randomShadow()
+                .steppedBorder(width = 1.dp, color = accent, shape = CircleShape)
+                .background(Color(0xFF070809), CircleShape)
+                .clickable(onClick = onFindNearestMessageClick),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Search,
+                contentDescription = "Find nearest message",
+                tint = accent,
+                modifier = Modifier.size(22.dp),
             )
         }
     }

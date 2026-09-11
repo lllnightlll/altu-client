@@ -151,6 +151,8 @@ fun Chat(
     onHomeClick: () -> Unit = {},
 ) {
     val chat = ChatItems.items.find { it.id == chatId }
+    var messageSearchVisible by remember { mutableStateOf(false) }
+    var messageQuery by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -161,7 +163,19 @@ fun Chat(
             nickname = chat?.nickname ?: "Chat",
             avatarRes = chat?.avatarRes ?: R.drawable.sound_icon,
             onHomeClick = onHomeClick,
+            onFindNearestMessageClick = {
+                messageSearchVisible = !messageSearchVisible
+                if (!messageSearchVisible) messageQuery = ""
+            },
         )
+        if (messageSearchVisible) {
+            SearchBar(
+                query = messageQuery,
+                onQueryChange = { messageQuery = it },
+                placeholder = "Find message",
+                modifier = Modifier.padding(top = 8.dp),
+            )
+        }
     }
 }
 
