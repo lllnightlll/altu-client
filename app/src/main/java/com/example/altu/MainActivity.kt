@@ -96,7 +96,17 @@ fun Main() {
                 route = Routes.Chat.route,
                 arguments = listOf(navArgument("chatId") { type = NavType.StringType }),
             ) { entry ->
-                Chat(chatId = entry.arguments?.getString("chatId"))
+                Chat(
+                    chatId = entry.arguments?.getString("chatId"),
+                    onHomeClick = {
+                        navController.popBackStack(
+                            route = Routes.Home.route,
+                            inclusive = false,
+                            saveState = true,
+                        )
+                        lastOpenChatId = null
+                    },
+                )
             }
             composable(Routes.Settings.route) { Settings() }
             composable(Routes.NewContact.route) { NewContact() }
@@ -136,7 +146,10 @@ fun Home(
 }
 
 @Composable
-fun Chat(chatId: String? = null) {
+fun Chat(
+    chatId: String? = null,
+    onHomeClick: () -> Unit = {},
+) {
     val chat = ChatItems.items.find { it.id == chatId }
 
     Column(
@@ -147,6 +160,7 @@ fun Chat(chatId: String? = null) {
         TopChatBar(
             nickname = chat?.nickname ?: "Chat",
             avatarRes = chat?.avatarRes ?: R.drawable.sound_icon,
+            onHomeClick = onHomeClick,
         )
     }
 }
