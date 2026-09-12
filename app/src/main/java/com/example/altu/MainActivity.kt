@@ -28,6 +28,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.altu.ChatBar.Chat.MessageList
+import com.example.altu.ChatBar.Chat.Messages
 import com.example.altu.ChatBar.Chat.TopChatBar
 import com.example.altu.ChatBar.ChatBar
 import com.example.altu.ChatBar.ChatItem
@@ -153,6 +155,11 @@ fun Chat(
     val chat = ChatItems.items.find { it.id == chatId }
     var messageSearchVisible by remember { mutableStateOf(false) }
     var messageQuery by remember { mutableStateOf("") }
+    val messages = remember(chatId, messageQuery) {
+        val all = Messages.forChat(chatId)
+        if (messageQuery.isBlank()) all
+        else all.filter { it.content.contains(messageQuery, ignoreCase = true) }
+    }
 
     Column(
         modifier = Modifier
@@ -176,6 +183,12 @@ fun Chat(
                 modifier = Modifier.padding(top = 8.dp),
             )
         }
+        MessageList(
+            messages = messages,
+            modifier = Modifier
+                .weight(1f)
+                .padding(top = 8.dp),
+        )
     }
 }
 
