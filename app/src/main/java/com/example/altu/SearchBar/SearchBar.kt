@@ -1,7 +1,6 @@
 package com.example.altu.SearchBar
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -65,8 +64,8 @@ fun SearchBar(
             .height(48.dp)
             .randomShadow()
              //.border(1.dp, accent, windowShape)
-            .steppedBorder(width = 1.dp, color = accent, shape = windowShape)
-            .background(Color(0xFF070809), windowShape)
+            .steppedBorder(width = 1.dp, color = accent, shape = windowShape, fillColor = Color(0xFF070809))
+            //.background(Color(0xFF070809), windowShape)
             .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

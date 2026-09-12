@@ -1,7 +1,6 @@
 package com.example.altu.ChatBar.Chat
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -48,8 +47,8 @@ fun TopChatBar(
             modifier = Modifier
                 .size(40.dp)
                 .randomShadow()
-                .steppedBorder(width = 1.dp, color = accent, shape = CircleShape)
-                .background(Color(0xFF070809), CircleShape)
+                .steppedBorder(width = 1.dp, color = accent, shape = CircleShape, fillColor = Color(0xFF070809))
+                //.background(Color(0xFF070809), CircleShape)
                 .clickable(onClick = onHomeClick),
             contentAlignment = Alignment.Center,
         ) {
@@ -67,8 +66,8 @@ fun TopChatBar(
             modifier = Modifier
                 .weight(1f)
                 .randomShadow()
-                .steppedBorder(width = 1.dp, color = accent, shape = barShape)
-                .background(Color(0xFF070809), barShape)
+                .steppedBorder(width = 1.dp, color = accent, shape = barShape, fillColor = Color(0xFF070809))
+                //.background(Color(0xFF070809), barShape)
                 .padding(horizontal = 4.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -99,8 +98,8 @@ fun TopChatBar(
             modifier = Modifier
                 .size(40.dp)
                 .randomShadow()
-                .steppedBorder(width = 1.dp, color = accent, shape = CircleShape)
-                .background(Color(0xFF070809), CircleShape)
+                .steppedBorder(width = 1.dp, color = accent, shape = CircleShape, fillColor = Color(0xFF070809))
+                //.background(Color(0xFF070809), CircleShape)
                 .clickable(onClick = onFindNearestMessageClick),
             contentAlignment = Alignment.Center,
         ) {

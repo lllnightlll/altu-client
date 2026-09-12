@@ -36,8 +36,8 @@ fun ChatRow(
         modifier = Modifier
             .fillMaxWidth()
             .randomShadow()
-            .steppedBorder(width = 1.dp, color = accent, shape = windowShape)
-            .background(Color(0xFF070809), windowShape)
+            .steppedBorder(width = 1.dp, color = accent, shape = windowShape, fillColor = Color(0xFF070809))
+            //.background(Color(0xFF070809), windowShape)
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,

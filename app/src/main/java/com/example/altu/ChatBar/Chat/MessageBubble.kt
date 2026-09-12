@@ -1,6 +1,5 @@
 package com.example.altu.ChatBar.Chat
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -63,8 +62,12 @@ fun MessageBubble(
             modifier = Modifier
                 .widthIn(max = 280.dp)
                 .randomShadow()
-                .steppedBorder(width = 1.dp, color = accent, shape = bubbleShape)
-                .background(bubbleColor, bubbleShape)
+                .steppedBorder(
+                    width = 1.dp,
+                    color = accent,
+                    shape = bubbleShape,
+                    fillColor = bubbleColor,
+                )
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             horizontalAlignment = if (fromMe) Alignment.End else Alignment.Start,
             verticalArrangement = Arrangement.spacedBy(1.dp),

@@ -91,6 +91,7 @@ fun NavBar(
                     width = 0.5.dp,
                     color = Color(0xFFFFFFFF),
                     shape = RoundedCornerShape(32.dp),
+                    fillColor = Color(0xFF070809),
                 )
                 .clip(barShape),
             containerColor = Color(0xFF070809),
