@@ -28,8 +28,8 @@ fun MessageBubble(
     modifier: Modifier = Modifier,
 ) {
     val fromMe = message.sender == "me"
-    val accent = Color(0xFFACADAC)
-    val bubbleColor = if (fromMe) Color(0xFF1A1218) else Color(0xFF070809)
+    val accent = if (fromMe) Color(0xFF070809) else Color(0xFFACADAC)
+    val bubbleColor = if (fromMe) Color(0xFFACADAC) else Color(0xFF070809)
     val bubbleShape = RoundedCornerShape(16.dp)
     val contentStyle = TextStyle(
         color = accent,
