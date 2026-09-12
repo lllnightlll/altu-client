@@ -28,6 +28,7 @@ fun Modifier.steppedBorder(
     color: Color = Color(0xFFACADAC),
     shape: Shape = RoundedCornerShape(16.dp),
     innerDiamondColor: Color = Color.Black,
+    fillColor: Color? = null,
 ): Modifier = composed {
     val topSteps = remember { List(5) { Random.nextInt(2, 9).toFloat() } }
     val diamonds = remember {
@@ -40,11 +41,16 @@ fun Modifier.steppedBorder(
     }
 
     drawWithContent {
-        drawContent()
-
         val stroke = width.toPx()
         val inset = stroke / 2f
         val cornerRadius = shape.cornerRadius(size, layoutDirection, this)
+        val fillPath = buildSteppedBorderPath(
+            width = size.width,
+            height = size.height,
+            inset = 0f,
+            cornerRadius = cornerRadius,
+            topSteps = topSteps,
+        )
         val borderPath = buildSteppedBorderPath(
             width = size.width,
             height = size.height,
@@ -52,6 +58,11 @@ fun Modifier.steppedBorder(
             cornerRadius = cornerRadius,
             topSteps = topSteps,
         )
+
+        if (fillColor != null) {
+            drawPath(path = fillPath, color = fillColor)
+        }
+        drawContent()
 
         drawPath(
             path = borderPath,
