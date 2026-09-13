@@ -79,9 +79,9 @@ fun ChatBar(
                 modifier = Modifier
                     .size(44.dp)
                     .randomShadow()
-                    .steppedBorder(width = 1.dp, color = accent, shape = RoundedCornerShape(22.dp))
+                    .steppedBorder(width = 1.dp, color = accent, shape = RoundedCornerShape(22.dp), fillColor = Color(0xFF070809))
                     .clip(CircleShape)
-                    .background(Color(0xFF070809)),
+                    //.background(Color(0xFF070809)),
             ) {
                 Icon(
                     imageVector = Icons.Filled.KeyboardArrowUp,
