@@ -25,10 +25,17 @@ import com.example.altu.ui.theme.GothicFont
 @Composable
 fun MessageBubble(
     message: Message,
+    highlighted: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val fromMe = message.sender == "me"
-    val accent = if (fromMe) Color(0xFF070809) else Color(0xFFACADAC)
+    val accent = if (highlighted) {
+        Color(0xFFEC407A)
+    } else if (fromMe) {
+        Color(0xFF070809)
+    } else {
+        Color(0xFFACADAC)
+    }
     val bubbleColor = if (fromMe) Color(0xFFACADAC) else Color(0xFF070809)
     val bubbleShape = RoundedCornerShape(16.dp)
     val contentStyle = TextStyle(

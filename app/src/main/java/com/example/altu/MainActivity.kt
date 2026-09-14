@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -155,11 +156,8 @@ fun Chat(
     val chat = ChatItems.items.find { it.id == chatId }
     var messageSearchVisible by remember { mutableStateOf(false) }
     var messageQuery by remember { mutableStateOf("") }
-    val messages = remember(chatId, messageQuery) {
-        val all = Messages.forChat(chatId)
-        if (messageQuery.isBlank()) all
-        else all.filter { it.content.contains(messageQuery, ignoreCase = true) }
-    }
+    var findNextToken by remember { mutableIntStateOf(0) }
+    val messages = remember(chatId) { Messages.forChat(chatId) }
 
     Column(
         modifier = Modifier
@@ -171,20 +169,28 @@ fun Chat(
             avatarRes = chat?.avatarRes ?: R.drawable.sound_icon,
             onHomeClick = onHomeClick,
             onFindNearestMessageClick = {
-                messageSearchVisible = !messageSearchVisible
-                if (!messageSearchVisible) messageQuery = ""
+                when {
+                    !messageSearchVisible -> messageSearchVisible = true
+                    messageQuery.isNotBlank() -> findNextToken++
+                    else -> messageSearchVisible = false
+                }
             },
         )
         if (messageSearchVisible) {
             SearchBar(
                 query = messageQuery,
                 onQueryChange = { messageQuery = it },
+                onSearch = {
+                    if (messageQuery.isNotBlank()) findNextToken++
+                },
                 placeholder = "Find message",
                 modifier = Modifier.padding(top = 8.dp),
             )
         }
         MessageList(
             messages = messages,
+            searchQuery = if (messageSearchVisible) messageQuery else "",
+            findNextToken = findNextToken,
             modifier = Modifier
                 .weight(1f)
                 .padding(top = 8.dp),
