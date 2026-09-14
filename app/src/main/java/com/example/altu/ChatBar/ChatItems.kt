@@ -1,8 +1,10 @@
 package com.example.altu.ChatBar
 
+import com.example.altu.ChatBar.Chat.VoidwalkerMessages
+
 object ChatItems {
     val items = listOf(
-        ChatItem("1", "voidwalker", "21:04", 3),
+        ChatItem("1", "voidwalker", "21:04", 3, messages = VoidwalkerMessages),
         ChatItem("2", "lunar_ash", "20:41", 12),
         ChatItem("3", "cathedral", "19:18", 0),
         ChatItem("4", "nocturne", "18:55", 1),

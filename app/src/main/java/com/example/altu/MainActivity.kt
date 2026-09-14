@@ -30,7 +30,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.altu.ChatBar.Chat.MessageList
-import com.example.altu.ChatBar.Chat.Messages
 import com.example.altu.ChatBar.Chat.TopChatBar
 import com.example.altu.ChatBar.ChatBar
 import com.example.altu.ChatBar.ChatItem
@@ -157,7 +156,7 @@ fun Chat(
     var messageSearchVisible by remember { mutableStateOf(false) }
     var messageQuery by remember { mutableStateOf("") }
     var findNextToken by remember { mutableIntStateOf(0) }
-    val messages = remember(chatId) { Messages.forChat(chatId) }
+    val messages = chat?.messages.orEmpty()
 
     Column(
         modifier = Modifier
