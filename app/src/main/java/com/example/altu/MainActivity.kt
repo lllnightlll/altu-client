@@ -29,11 +29,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.example.altu.ChatBar.Chat.MessageList
 import com.example.altu.ChatBar.Chat.TopChatBar
 import com.example.altu.ChatBar.ChatBar
 import com.example.altu.ChatBar.ChatItem
 import com.example.altu.ChatBar.ChatItems
+import com.example.altu.NewContact.ContactBar
 import com.example.altu.R
 import com.example.altu.Routes.NavBar
 import com.example.altu.Routes.Routes
@@ -111,7 +113,17 @@ fun Main() {
                 )
             }
             composable(Routes.Settings.route) { Settings() }
-            composable(Routes.NewContact.route) { NewContact() }
+            composable(Routes.NewContact.route) {
+                NewContact(
+                    onBackToChats = {
+                        navController.navigate(Routes.Home.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                )
+            }
         }
     }
 }
@@ -203,6 +215,14 @@ fun Settings() {
 }
 
 @Composable
-fun NewContact() {
-    Text("Contact Page", fontFamily = GothicFont, fontSize = 51.sp)
+fun NewContact(
+    onBackToChats: () -> Unit = {},
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        ContactBar(onBackToChats = onBackToChats)
+    }
 }
