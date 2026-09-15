@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +37,8 @@ import com.example.altu.ChatBar.ChatBar
 import com.example.altu.ChatBar.ChatItem
 import com.example.altu.ChatBar.ChatItems
 import com.example.altu.NewContact.ContactBar
+import com.example.altu.NewContact.ContactTab
+import com.example.altu.NewContact.ContactTabBar
 import com.example.altu.R
 import com.example.altu.Routes.NavBar
 import com.example.altu.Routes.Routes
@@ -218,11 +221,18 @@ fun Settings() {
 fun NewContact(
     onBackToChats: () -> Unit = {},
 ) {
+    var selectedTab by remember { mutableStateOf(ContactTab.Qr) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
         ContactBar(onBackToChats = onBackToChats)
+        Spacer(modifier = Modifier.weight(1f))
+        ContactTabBar(
+            selectedTab = selectedTab,
+            onTabSelected = { selectedTab = it },
+        )
     }
 }
