@@ -42,6 +42,7 @@ import com.example.altu.NewContact.ContactBar
 import com.example.altu.NewContact.ContactTab
 import com.example.altu.NewContact.ContactTabBar
 import com.example.altu.NewContact.QrFrame
+import com.example.altu.NewContact.ScanFrame
 import com.example.altu.R
 import com.example.altu.Routes.NavBar
 import com.example.altu.Routes.Routes
@@ -238,8 +239,9 @@ fun NewContact(
                 .fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
-            if (selectedTab == ContactTab.Qr) {
-                QrFrame()
+            when (selectedTab) {
+                ContactTab.Qr -> QrFrame()
+                ContactTab.Scan -> ScanFrame()
             }
         }
         ContactTabBar(
