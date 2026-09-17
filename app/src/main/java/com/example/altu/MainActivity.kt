@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +21,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -39,6 +41,7 @@ import com.example.altu.ChatBar.ChatItems
 import com.example.altu.NewContact.ContactBar
 import com.example.altu.NewContact.ContactTab
 import com.example.altu.NewContact.ContactTabBar
+import com.example.altu.NewContact.QrFrame
 import com.example.altu.R
 import com.example.altu.Routes.NavBar
 import com.example.altu.Routes.Routes
@@ -229,7 +232,16 @@ fun NewContact(
             .padding(horizontal = 12.dp, vertical = 8.dp),
     ) {
         ContactBar(onBackToChats = onBackToChats)
-        Spacer(modifier = Modifier.weight(1f))
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (selectedTab == ContactTab.Qr) {
+                QrFrame()
+            }
+        }
         ContactTabBar(
             selectedTab = selectedTab,
             onTabSelected = { selectedTab = it },
