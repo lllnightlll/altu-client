@@ -18,6 +18,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.AutoDelete
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -30,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.altu.SoundBar.randomShadow
@@ -62,15 +67,18 @@ fun Settings(
         ) {
             SettingsToggleRow(
                 title = "Notifications",
+                icon = Icons.Filled.Notifications,
                 checked = notificationsEnabled,
                 onCheckedChange = { notificationsEnabled = it },
             )
             SettingsActionRow(
                 title = "Delete all messages",
+                icon = Icons.Filled.AutoDelete,
                 onClick = onDeleteAllMessages,
             )
             SettingsActionRow(
                 title = "Privacy",
+                icon = Icons.Filled.Lock,
                 trailing = {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -83,7 +91,9 @@ fun Settings(
             )
             SettingsActionRow(
                 title = "Delete account",
+                icon = Icons.Filled.PersonRemove,
                 titleColor = danger,
+                iconTint = danger,
                 onClick = onDeleteAccount,
             )
         }
@@ -125,8 +135,34 @@ fun SettingsBar(
 }
 
 @Composable
+private fun SettingsLeadingIcon(
+    icon: ImageVector,
+    tint: Color = Color(0xFFACADAC),
+) {
+    Box(
+        modifier = Modifier
+            .size(34.dp)
+            .steppedBorder(
+                width = 1.dp,
+                color = tint.copy(alpha = 0.85f),
+                shape = CircleShape,
+                fillColor = Color(0xFF121416),
+            ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(18.dp),
+        )
+    }
+}
+
+@Composable
 private fun SettingsToggleRow(
     title: String,
+    icon: ImageVector,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
@@ -141,6 +177,8 @@ private fun SettingsToggleRow(
             .padding(horizontal = 14.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        SettingsLeadingIcon(icon = icon, tint = accent)
+        Spacer(modifier = Modifier.size(12.dp))
         Text(
             text = title,
             color = accent,
@@ -165,7 +203,9 @@ private fun SettingsToggleRow(
 @Composable
 private fun SettingsActionRow(
     title: String,
+    icon: ImageVector,
     titleColor: Color = Color(0xFFACADAC),
+    iconTint: Color = titleColor,
     trailing: @Composable (() -> Unit)? = null,
     onClick: () -> Unit,
 ) {
@@ -178,9 +218,11 @@ private fun SettingsActionRow(
             .randomShadow()
             .steppedBorder(width = 1.dp, color = accent, shape = shape, fillColor = Color(0xFF070809))
             .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 16.dp),
+            .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        SettingsLeadingIcon(icon = icon, tint = iconTint)
+        Spacer(modifier = Modifier.size(12.dp))
         Text(
             text = title,
             color = titleColor,
