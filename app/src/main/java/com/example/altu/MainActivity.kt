@@ -47,6 +47,7 @@ import com.example.altu.R
 import com.example.altu.Routes.NavBar
 import com.example.altu.Routes.Routes
 import com.example.altu.SearchBar.SearchBar
+import com.example.altu.Settings.PrivacyScreen
 import com.example.altu.Settings.Settings
 import com.example.altu.SoundBar.MusicController
 import com.example.altu.SoundBar.SoundBar
@@ -129,6 +130,14 @@ fun Main() {
                             restoreState = true
                         }
                     },
+                    onPrivacyClick = {
+                        navController.navigate(Routes.Privacy.route)
+                    },
+                )
+            }
+            composable(Routes.Privacy.route) {
+                PrivacyScreen(
+                    onBack = { navController.popBackStack() },
                 )
             }
             composable(Routes.NewContact.route) {

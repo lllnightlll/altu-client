@@ -103,6 +103,9 @@ fun NavBar(
                     isHomeTab ->
                         currentRoute == Routes.Home.route ||
                             currentRoute?.startsWith("chat/") == true
+                    navItem.route == Routes.Settings.route ->
+                        currentRoute == Routes.Settings.route ||
+                            currentRoute == Routes.Privacy.route
                     else -> currentRoute == navItem.route
                 }
 
