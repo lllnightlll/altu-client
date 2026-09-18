@@ -47,6 +47,7 @@ import com.example.altu.R
 import com.example.altu.Routes.NavBar
 import com.example.altu.Routes.Routes
 import com.example.altu.SearchBar.SearchBar
+import com.example.altu.Settings.Settings
 import com.example.altu.SoundBar.MusicController
 import com.example.altu.SoundBar.SoundBar
 import com.example.altu.ui.theme.AltuTheme
@@ -119,7 +120,17 @@ fun Main() {
                     },
                 )
             }
-            composable(Routes.Settings.route) { Settings() }
+            composable(Routes.Settings.route) {
+                Settings(
+                    onBackToChats = {
+                        navController.navigate(Routes.Home.route) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                )
+            }
             composable(Routes.NewContact.route) {
                 NewContact(
                     onBackToChats = {
@@ -214,11 +225,6 @@ fun Chat(
                 .padding(top = 8.dp),
         )
     }
-}
-
-@Composable
-fun Settings() {
-    Text("Settings Page", fontFamily = GothicFont, fontSize = 51.sp)
 }
 
 @Composable
