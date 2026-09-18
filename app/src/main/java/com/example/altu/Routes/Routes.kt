@@ -6,5 +6,6 @@ sealed class Routes(val route: String) {
         fun create(chatId: String) = "chat/$chatId"
     }
     object Settings : Routes("settings")
+    object Privacy : Routes("privacy")
     object NewContact : Routes("newContact")
 }
