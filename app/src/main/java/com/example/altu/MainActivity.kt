@@ -82,7 +82,7 @@ fun Main() {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = Color(0xFF6650a4),
+        containerColor = Color(0xFF070809),
         bottomBar = {
             NavBar(
                 navController = navController,
