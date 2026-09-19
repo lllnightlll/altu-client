@@ -3,6 +3,7 @@ package com.example.altu
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
@@ -24,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,7 +60,11 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        val barScrim = Color(0xFF070809).toArgb()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(barScrim),
+            navigationBarStyle = SystemBarStyle.dark(barScrim),
+        )
         window.isNavigationBarContrastEnforced = false
         setContent {
             AltuTheme(darkTheme = true, dynamicColor = false) {
