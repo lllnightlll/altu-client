@@ -7,11 +7,13 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -24,9 +26,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavType
@@ -100,7 +105,7 @@ fun Main() {
         NavHost(
             navController,
             startDestination = Routes.Home.route,
-            modifier = Modifier.padding(innerPadding).fillMaxSize()
+            modifier = Modifier.padding(innerPadding).fillMaxSize().clip(RoundedCornerShape(32.dp))
         ) {
             composable(Routes.Home.route) {
                 Home(
@@ -203,42 +208,50 @@ fun Chat(
     var findNextToken by remember { mutableIntStateOf(0) }
     val messages = chat?.messages.orEmpty()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-    ) {
-        TopChatBar(
-            nickname = chat?.nickname ?: "Chat",
-            avatarRes = chat?.avatarRes ?: R.drawable.sound_icon,
-            onHomeClick = onHomeClick,
-            onFindNearestMessageClick = {
-                when {
-                    !messageSearchVisible -> messageSearchVisible = true
-                    messageQuery.isNotBlank() -> findNextToken++
-                    else -> messageSearchVisible = false
-                }
-            },
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(R.drawable.chat_background),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
         )
-        if (messageSearchVisible) {
-            SearchBar(
-                query = messageQuery,
-                onQueryChange = { messageQuery = it },
-                onSearch = {
-                    if (messageQuery.isNotBlank()) findNextToken++
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+        ) {
+            TopChatBar(
+                nickname = chat?.nickname ?: "Chat",
+                avatarRes = chat?.avatarRes ?: R.drawable.sound_icon,
+                onHomeClick = onHomeClick,
+                onFindNearestMessageClick = {
+                    when {
+                        !messageSearchVisible -> messageSearchVisible = true
+                        messageQuery.isNotBlank() -> findNextToken++
+                        else -> messageSearchVisible = false
+                    }
                 },
-                placeholder = "Find message",
-                modifier = Modifier.padding(top = 8.dp),
+            )
+            if (messageSearchVisible) {
+                SearchBar(
+                    query = messageQuery,
+                    onQueryChange = { messageQuery = it },
+                    onSearch = {
+                        if (messageQuery.isNotBlank()) findNextToken++
+                    },
+                    placeholder = "Find message",
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
+            MessageList(
+                messages = messages,
+                searchQuery = if (messageSearchVisible) messageQuery else "",
+                findNextToken = findNextToken,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(top = 8.dp),
             )
         }
-        MessageList(
-            messages = messages,
-            searchQuery = if (messageSearchVisible) messageQuery else "",
-            findNextToken = findNextToken,
-            modifier = Modifier
-                .weight(1f)
-                .padding(top = 8.dp),
-        )
     }
 }
 
