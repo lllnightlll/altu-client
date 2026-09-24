@@ -37,7 +37,7 @@ private const val SCROLL_TO_TOP_THRESHOLD = 8
 
 @Composable
 fun ChatBar(
-    chats: List<ChatItem> = ChatItems.items,
+    chats: List<ChatItem>,
     onChatClick: (ChatItem) -> Unit = {},
     @SuppressLint("ModifierParameter") modifier: Modifier = Modifier,
 ) {

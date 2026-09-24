@@ -32,7 +32,6 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.altu.ChatBar.ChatItems
 import com.example.altu.SteppedBorder.steppedBorder
 import com.example.altu.ui.theme.GothicFont
 import kotlin.random.Random
@@ -44,6 +43,7 @@ private const val CrossbarFromTop = 0.38f
 @Composable
 fun NavBar(
     navController: NavController,
+    unreadCount: Int = 0,
     lastOpenChatId: String? = null,
     onReturnToHomeList: () -> Unit = {},
 ) {
@@ -125,10 +125,9 @@ fun NavBar(
                         when {
                             isHomeTab -> ChatsTabIcon(
                                 selected = selected,
-                                unreadCount = ChatItems.items.sumOf { it.unreadCount },
+                                unreadCount = unreadCount,
                             )
                             isContactTab -> {
-                                // Placeholder — real cross is the overlay above.
                                 Box(modifier = Modifier.size(28.dp))
                             }
                             navItem.route == Routes.Settings.route ->

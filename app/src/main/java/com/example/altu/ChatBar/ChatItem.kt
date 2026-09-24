@@ -1,7 +1,6 @@
 package com.example.altu.ChatBar
 
 import androidx.annotation.DrawableRes
-import com.example.altu.ChatBar.Chat.Message
 import com.example.altu.R
 
 data class ChatItem(
@@ -9,6 +8,5 @@ data class ChatItem(
     val nickname: String,
     val time: String,
     val unreadCount: Int,
-    @DrawableRes val avatarRes: Int = R.drawable.sound_icon,
-    val messages: List<Message> = emptyList(),
+    @param:DrawableRes val avatarRes: Int = R.drawable.sound_icon,
 )
