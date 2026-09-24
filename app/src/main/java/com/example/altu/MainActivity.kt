@@ -59,6 +59,7 @@ import com.example.altu.ChatBar.ChatBar
 import com.example.altu.ChatBar.ChatItem
 import com.example.altu.DataBase.AltuDatabase
 import com.example.altu.DataBase.ChatRepository
+import com.example.altu.crypto.IdentityStore
 import com.example.altu.NewContact.ContactBar
 import com.example.altu.Profile.LocalUser
 import com.example.altu.NewContact.ContactTab
@@ -100,7 +101,8 @@ fun Main() {
     val navController = rememberNavController()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val repository = remember { ChatRepository(AltuDatabase.get(context)) }
+    val identity = remember { IdentityStore(context).loadOrCreate() }
+    val repository = remember { ChatRepository(AltuDatabase.get(context), identity) }
     val chats by repository.observeChats().collectAsState(initial = emptyList())
     val musicController = remember { MusicController(context) }
     var lastOpenChatId by remember { mutableStateOf<String?>(null) }

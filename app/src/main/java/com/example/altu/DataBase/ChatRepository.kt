@@ -6,6 +6,9 @@ import com.example.altu.DataBase.entity.QueuedMessageEntity
 import com.example.altu.DataBase.entity.UserEntity
 import com.example.altu.Profile.LocalUser
 import com.example.altu.R
+import com.example.altu.crypto.Ed25519Identity
+import com.example.altu.crypto.MessageCipher
+import com.example.altu.crypto.SendEnvelope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -16,9 +19,11 @@ import java.util.UUID
 
 class ChatRepository(
     private val database: AltuDatabase,
+    private val identity: Ed25519Identity,
 ) {
     private val users = database.userDao()
     private val queue = database.messageQueueDao()
+    private val cipher = MessageCipher(identity)
     private val clock = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     fun observeChats(): Flow<List<ChatItem>> {
@@ -42,10 +47,14 @@ class ChatRepository(
 
     fun observeMessages(chatId: String): Flow<List<Message>> {
         return queue.observeByChat(chatId).combine(users.observeById(chatId)) { rows, peer ->
+            val otherKey = peer?.publicKey ?: identity.publicKey
             rows.map { row ->
+                val aad = MessageCipher.associatedData(row.fromUserId, row.toUserId, row.chatId)
+                val content = cipher.decrypt(row.nonce, row.ciphertext, otherKey, aad)
+                    ?: row.ciphertext.toString(Charsets.UTF_8)
                 Message(
                     id = row.messageId,
-                    content = row.ciphertext.toString(Charsets.UTF_8),
+                    content = content,
                     sender = if (row.fromUserId == LocalUser.ID) "me" else peer?.tag ?: row.fromUserId,
                     timestamp = clock.format(Date(row.createdAt)),
                 )
@@ -53,23 +62,34 @@ class ChatRepository(
         }
     }
 
-    suspend fun sendMessage(chatId: String, text: String) {
+    suspend fun sendMessage(chatId: String, text: String): SendEnvelope? {
         val body = text.trim()
-        if (body.isEmpty() || chatId.isBlank()) return
-        val peer = users.findById(chatId) ?: return
+        if (body.isEmpty() || chatId.isBlank()) return null
+        val peer = users.findById(chatId) ?: return null
         val now = System.currentTimeMillis()
+        val aad = MessageCipher.associatedData(LocalUser.ID, peer.userId, peer.userId)
+        val sealed = cipher.encrypt(body, peer.publicKey, aad)
+        val envelope = SendEnvelope.create(
+            identity = identity,
+            fromUserId = LocalUser.ID,
+            toUserId = peer.userId,
+            chatId = peer.userId,
+            sealed = sealed,
+            timestampMillis = now,
+        )
         queue.insert(
             QueuedMessageEntity(
                 messageId = UUID.randomUUID().toString(),
                 fromUserId = LocalUser.ID,
                 toUserId = peer.userId,
                 chatId = peer.userId,
-                nonce = ByteArray(1),
-                ciphertext = body.toByteArray(Charsets.UTF_8),
+                nonce = sealed.nonce,
+                ciphertext = sealed.ciphertext,
                 createdAt = now,
                 deliveredAt = now,
             ),
         )
+        return envelope
     }
 
     suspend fun deleteAllMessages() {
@@ -77,15 +97,21 @@ class ChatRepository(
     }
 
     suspend fun seedIfEmpty() {
-        if (users.count() > 0) return
-        users.insert(
-            UserEntity(
-                userId = LocalUser.ID,
-                tag = LocalUser.NOTES_TITLE,
-                publicKey = ByteArray(ED25519_KEY_SIZE),
-                createdAt = System.currentTimeMillis(),
-            ),
-        )
+        val existing = users.findById(LocalUser.ID)
+        if (existing == null) {
+            users.insert(
+                UserEntity(
+                    userId = LocalUser.ID,
+                    tag = LocalUser.NOTES_TITLE,
+                    publicKey = identity.publicKey,
+                    createdAt = System.currentTimeMillis(),
+                ),
+            )
+            return
+        }
+        if (!existing.publicKey.contentEquals(identity.publicKey)) {
+            users.updatePublicKey(LocalUser.ID, identity.publicKey)
+        }
     }
 
     private fun notesChatItem(messages: List<QueuedMessageEntity>): ChatItem {
@@ -124,9 +150,5 @@ class ChatRepository(
             unreadCount = unread,
             avatarRes = avatarRes,
         )
-    }
-
-    companion object {
-        private const val ED25519_KEY_SIZE = 32
     }
 }
