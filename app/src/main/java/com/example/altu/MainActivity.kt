@@ -59,9 +59,12 @@ import com.example.altu.ChatBar.ChatBar
 import com.example.altu.ChatBar.ChatItem
 import com.example.altu.DataBase.AltuDatabase
 import com.example.altu.DataBase.ChatRepository
+import com.example.altu.Auth.RegisterScreen
 import com.example.altu.crypto.IdentityStore
 import com.example.altu.NewContact.ContactBar
+import com.example.altu.Profile.AvatarStore
 import com.example.altu.Profile.LocalUser
+import com.example.altu.Profile.SessionStore
 import com.example.altu.NewContact.ContactTab
 import com.example.altu.NewContact.ContactTabBar
 import com.example.altu.NewContact.QrFrame
@@ -102,18 +105,24 @@ fun Main() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val identity = remember { IdentityStore(context).loadOrCreate() }
-    val repository = remember { ChatRepository(AltuDatabase.get(context), identity) }
+    val sessionStore = remember { SessionStore(context) }
+    val avatarStore = remember { AvatarStore(context) }
+    val repository = remember { ChatRepository(AltuDatabase.get(context), identity, sessionStore, avatarStore) }
     val chats by repository.observeChats().collectAsState(initial = emptyList())
     val musicController = remember { MusicController(context) }
     var lastOpenChatId by remember { mutableStateOf<String?>(null) }
+    var registerBusy by remember { mutableStateOf(false) }
+    var registerError by remember { mutableStateOf<String?>(null) }
     val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
     val onChat = currentRoute?.startsWith("chat/") == true
+    val onRegister = currentRoute == Routes.Register.route
     val imeVisible = WindowInsets.isImeVisible
     val liftChatForIme = onChat && imeVisible
     val layoutDirection = LocalLayoutDirection.current
+    val startRoute = if (sessionStore.isRegistered()) Routes.Home.route else Routes.Register.route
 
     LaunchedEffect(repository) {
-        repository.seedIfEmpty()
+        repository.ensureLocalUser()
     }
 
     DisposableEffect(musicController) {
@@ -124,7 +133,7 @@ fun Main() {
         modifier = Modifier.fillMaxSize(),
         containerColor = Color(0xFF070809),
         bottomBar = {
-            if (!liftChatForIme) {
+            if (!liftChatForIme && !onRegister) {
                 NavBar(
                     navController = navController,
                     unreadCount = chats.sumOf { it.unreadCount },
@@ -142,9 +151,31 @@ fun Main() {
         )
         NavHost(
             navController,
-            startDestination = Routes.Home.route,
+            startDestination = startRoute,
             modifier = Modifier.padding(hostPadding).fillMaxSize().clip(RoundedCornerShape(32.dp))
         ) {
+            composable(Routes.Register.route) {
+                RegisterScreen(
+                    busy = registerBusy,
+                    error = registerError,
+                    onRegister = { tag, avatarUri ->
+                        scope.launch {
+                            registerBusy = true
+                            registerError = null
+                            val result = repository.register(tag, avatarUri)
+                            registerBusy = false
+                            result.onSuccess {
+                                navController.navigate(Routes.Home.route) {
+                                    popUpTo(Routes.Register.route) { inclusive = true }
+                                    launchSingleTop = true
+                                }
+                            }.onFailure { error ->
+                                registerError = error.message
+                            }
+                        }
+                    },
+                )
+            }
             composable(Routes.Home.route) {
                 Home(
                     chats = chats,
@@ -186,6 +217,17 @@ fun Main() {
                     },
                     onDeleteAllMessages = {
                         scope.launch { repository.deleteAllMessages() }
+                    },
+                    onDeleteAccount = {
+                        scope.launch {
+                            repository.deleteAccount()
+                            lastOpenChatId = null
+                            registerError = null
+                            navController.navigate(Routes.Register.route) {
+                                popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
                     },
                 )
             }
@@ -271,6 +313,7 @@ fun Chat(
             TopChatBar(
                 nickname = chat?.nickname ?: "Chat",
                 avatarRes = chat?.avatarRes ?: LocalUser.avatarRes,
+                avatarPath = chat?.avatarPath,
                 onHomeClick = onHomeClick,
                 onFindNearestMessageClick = {
                     when {
