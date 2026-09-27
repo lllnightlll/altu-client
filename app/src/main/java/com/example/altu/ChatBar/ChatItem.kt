@@ -9,4 +9,5 @@ data class ChatItem(
     val time: String,
     val unreadCount: Int,
     @param:DrawableRes val avatarRes: Int = R.drawable.sound_icon,
+    val avatarPath: String? = null,
 )

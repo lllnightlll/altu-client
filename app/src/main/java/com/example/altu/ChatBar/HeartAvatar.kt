@@ -19,9 +19,16 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import android.graphics.BitmapFactory
+import android.net.Uri
+import com.example.altu.R
+import java.io.File
 import kotlin.random.Random
 
 private fun insetX(width: Float, fraction: Float): Float =
@@ -69,8 +76,10 @@ private val heartEdgePoints = listOf(
 
 @Composable
 fun HeartAvatar(
-    @DrawableRes avatarRes: Int,
     contentDescription: String,
+    @DrawableRes avatarRes: Int = R.drawable.ic_launcher_foreground,
+    avatarPath: String? = null,
+    avatarUri: Uri? = null,
     modifier: Modifier = Modifier,
     height: Dp = 54.dp,
     widthRatio: Float = 1.45f,
@@ -84,6 +93,10 @@ fun HeartAvatar(
     val diamondIndices = remember {
         List(Random.nextInt(5, 9)) { Random.nextInt(heartEdgePoints.size) }
     }
+    val context = LocalContext.current
+    val fileBitmap = remember(avatarPath, avatarUri) {
+        decodeAvatar(avatarPath, avatarUri, context)
+    }
 
     Box(
         modifier = modifier
@@ -91,15 +104,25 @@ fun HeartAvatar(
             .aspectRatio(widthRatio)
             .heartFrame(diamondIndices, borderWidth)
     ) {
-        Image(
-            painter = painterResource(avatarRes),
-            contentDescription = contentDescription,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(1.5.dp)
-                .clip(heartShape),
-        )
+        val imageModifier = Modifier
+            .fillMaxSize()
+            .padding(1.5.dp)
+            .clip(heartShape)
+        if (fileBitmap != null) {
+            Image(
+                bitmap = fileBitmap,
+                contentDescription = contentDescription,
+                contentScale = ContentScale.Crop,
+                modifier = imageModifier,
+            )
+        } else {
+            Image(
+                painter = painterResource(avatarRes),
+                contentDescription = contentDescription,
+                contentScale = ContentScale.Crop,
+                modifier = imageModifier,
+            )
+        }
     }
 }
 
@@ -126,6 +149,24 @@ private fun Modifier.heartFrame(
         val center = Offset(insetX(size.width, nx), ny * size.height)
         drawRhombus(center, outerRadius, lineColor)
         drawRhombus(center, innerRadius, Color.Black)
+    }
+}
+
+private fun decodeAvatar(
+    avatarPath: String?,
+    avatarUri: Uri?,
+    context: android.content.Context,
+): ImageBitmap? {
+    if (!avatarPath.isNullOrBlank() && File(avatarPath).exists()) {
+        return BitmapFactory.decodeFile(avatarPath)?.asImageBitmap()
+    }
+    if (avatarUri == null) return null
+    return try {
+        context.contentResolver.openInputStream(avatarUri)?.use { input ->
+            BitmapFactory.decodeStream(input)?.asImageBitmap()
+        }
+    } catch (_: Exception) {
+        null
     }
 }
 

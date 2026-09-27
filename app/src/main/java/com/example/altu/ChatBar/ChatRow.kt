@@ -44,6 +44,7 @@ fun ChatRow(
     ) {
         HeartAvatar(
             avatarRes = chat.avatarRes,
+            avatarPath = chat.avatarPath,
             contentDescription = chat.nickname,
             height = 54.dp,
             widthRatio = 1.45f,
