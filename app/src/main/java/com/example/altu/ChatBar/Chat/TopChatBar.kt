@@ -32,6 +32,7 @@ import com.example.altu.ui.theme.GothicFont
 fun TopChatBar(
     nickname: String,
     @DrawableRes avatarRes: Int = R.drawable.sound_icon,
+    avatarPath: String? = null,
     onHomeClick: () -> Unit = {},
     onFindNearestMessageClick: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -73,6 +74,7 @@ fun TopChatBar(
         ) {
             HeartAvatar(
                 avatarRes = avatarRes,
+                avatarPath = avatarPath,
                 contentDescription = nickname,
                 height = 32.dp,
                 widthRatio = 1.45f,
