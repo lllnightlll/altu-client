@@ -1,6 +1,7 @@
 package com.example.altu.Routes
 
 sealed class Routes(val route: String) {
+    object Register : Routes("register")
     object Home : Routes("home")
     object Chat : Routes("chat/{chatId}") {
         fun create(chatId: String) = "chat/$chatId"
