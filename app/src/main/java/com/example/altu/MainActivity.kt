@@ -7,7 +7,11 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -152,7 +156,16 @@ fun Main() {
         NavHost(
             navController,
             startDestination = startRoute,
-            modifier = Modifier.padding(hostPadding).fillMaxSize().clip(RoundedCornerShape(32.dp))
+            enterTransition = { fadeIn(animationSpec = snap()) },
+            exitTransition = { fadeOut(animationSpec = snap()) },
+            popEnterTransition = { fadeIn(animationSpec = snap()) },
+            popExitTransition = { fadeOut(animationSpec = snap()) },
+            sizeTransform = { null },
+            modifier = Modifier
+                .padding(hostPadding)
+                .fillMaxSize()
+                .clip(RoundedCornerShape(32.dp))
+                .background(Color(0xFF070809)),
         ) {
             composable(Routes.Register.route) {
                 RegisterScreen(
