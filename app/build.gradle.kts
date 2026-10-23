@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.camera.view)
     implementation(libs.mlkit.barcode.scanning)
     implementation(libs.bouncycastle.provider)
+    implementation(libs.okhttp)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
