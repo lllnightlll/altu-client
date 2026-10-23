@@ -11,6 +11,10 @@ import com.example.altu.Profile.LocalUser
 import com.example.altu.Profile.Session
 import com.example.altu.Profile.SessionStore
 import com.example.altu.R
+import com.example.altu.api.AltuApi
+import com.example.altu.api.AltuApiException
+import com.example.altu.api.dto.QueuedMessageDto
+import com.example.altu.crypto.CryptoConstants
 import com.example.altu.crypto.Ed25519Identity
 import com.example.altu.crypto.MessageCipher
 import com.example.altu.crypto.SendEnvelope
@@ -21,9 +25,12 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
+import java.util.Base64
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import android.os.Build
+import java.time.OffsetDateTime
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChatRepository(
@@ -31,6 +38,7 @@ class ChatRepository(
     private val identity: Ed25519Identity,
     private val sessionStore: SessionStore,
     private val avatarStore: AvatarStore,
+    private val api: AltuApi,
 ) {
     private val users = database.userDao()
     private val queue = database.messageQueueDao()
@@ -80,6 +88,13 @@ class ChatRepository(
         TagRules.errorOrNull(clean)?.let { return Result.failure(IllegalArgumentException(it)) }
         if (sessionStore.isRegistered()) return Result.success(Unit)
         val userId = UUID.randomUUID().toString()
+        try {
+            api.register(userId, clean, identity.publicKey)
+        } catch (error: AltuApiException) {
+            return Result.failure(error)
+        } catch (error: Exception) {
+            return Result.failure(IllegalStateException("Server unavailable", error))
+        }
         val avatarPath = avatarUri?.let { avatarStore.save(it) }
         users.insert(
             UserEntity(
@@ -128,7 +143,66 @@ class ChatRepository(
                 deliveredAt = now,
             ),
         )
+        if (peer.userId != meId) {
+            try {
+                api.send(envelope)
+            } catch (_: Exception) {
+                // Локальная копия уже есть; повторная отправка — при следующем синке.
+            }
+        }
         return envelope
+    }
+
+    suspend fun syncInbox() {
+        val meId = sessionStore.userId() ?: return
+        val incoming = try {
+            api.fetchMessages(meId, identity)
+        } catch (_: Exception) {
+            return
+        }
+        if (incoming.isEmpty()) return
+        incoming.forEach { dto -> storeIncoming(dto) }
+        try {
+            api.ackReceived(meId, incoming.map { it.messageId }, identity)
+        } catch (_: Exception) {
+            return
+        }
+    }
+
+    private suspend fun storeIncoming(dto: QueuedMessageDto) {
+        if (users.findById(dto.fromUserId) == null) {
+            users.insertIgnore(
+                UserEntity(
+                    userId = dto.fromUserId,
+                    tag = dto.fromUserId,
+                    publicKey = ByteArray(CryptoConstants.ED25519_PUBLIC_KEY_SIZE),
+                    createdAt = System.currentTimeMillis(),
+                ),
+            )
+        }
+        val nonce = runCatching { Base64.getDecoder().decode(dto.nonce) }.getOrNull() ?: return
+        val ciphertext = runCatching { Base64.getDecoder().decode(dto.ciphertext) }.getOrNull() ?: return
+        queue.insertIgnore(
+            QueuedMessageEntity(
+                messageId = dto.messageId,
+                fromUserId = dto.fromUserId,
+                toUserId = dto.toUserId,
+                chatId = dto.chatId,
+                nonce = nonce,
+                ciphertext = ciphertext,
+                createdAt = parseServerTime(dto.createdAt),
+                deliveredAt = null,
+            ),
+        )
+    }
+
+    private fun parseServerTime(raw: String): Long {
+        if (raw.isBlank()) return System.currentTimeMillis()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return runCatching { OffsetDateTime.parse(raw).toInstant().toEpochMilli() }
+                .getOrDefault(System.currentTimeMillis())
+        }
+        return System.currentTimeMillis()
     }
 
     suspend fun deleteAllMessages() {

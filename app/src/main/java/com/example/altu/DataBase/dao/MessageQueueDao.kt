@@ -12,6 +12,9 @@ interface MessageQueueDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(message: QueuedMessageEntity)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertIgnore(message: QueuedMessageEntity)
+
     @Query(
         """
         SELECT * FROM messages_queue

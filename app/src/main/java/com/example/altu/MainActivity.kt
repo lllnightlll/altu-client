@@ -64,6 +64,8 @@ import com.example.altu.ChatBar.ChatItem
 import com.example.altu.DataBase.AltuDatabase
 import com.example.altu.DataBase.ChatRepository
 import com.example.altu.Auth.RegisterScreen
+import com.example.altu.api.AltuApi
+import com.example.altu.api.ServerConfig
 import com.example.altu.crypto.IdentityStore
 import com.example.altu.NewContact.ContactBar
 import com.example.altu.Profile.AvatarStore
@@ -82,6 +84,7 @@ import com.example.altu.Settings.Settings
 import com.example.altu.SoundBar.MusicController
 import com.example.altu.SoundBar.SoundBar
 import com.example.altu.ui.theme.AltuTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -111,7 +114,11 @@ fun Main() {
     val identity = remember { IdentityStore(context).loadOrCreate() }
     val sessionStore = remember { SessionStore(context) }
     val avatarStore = remember { AvatarStore(context) }
-    val repository = remember { ChatRepository(AltuDatabase.get(context), identity, sessionStore, avatarStore) }
+    val api = remember { AltuApi() }
+    val repository = remember {
+        ChatRepository(AltuDatabase.get(context), identity, sessionStore, avatarStore, api)
+    }
+    val session by sessionStore.session.collectAsState()
     val chats by repository.observeChats().collectAsState(initial = emptyList())
     val musicController = remember { MusicController(context) }
     var lastOpenChatId by remember { mutableStateOf<String?>(null) }
@@ -127,6 +134,14 @@ fun Main() {
 
     LaunchedEffect(repository) {
         repository.ensureLocalUser()
+    }
+
+    LaunchedEffect(session?.userId) {
+        if (session?.userId == null) return@LaunchedEffect
+        while (true) {
+            repository.syncInbox()
+            delay(ServerConfig.INBOX_POLL_MS)
+        }
     }
 
     DisposableEffect(musicController) {
