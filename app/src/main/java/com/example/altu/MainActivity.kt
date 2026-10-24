@@ -68,6 +68,7 @@ import com.example.altu.api.AltuApi
 import com.example.altu.api.ServerConfig
 import com.example.altu.crypto.IdentityStore
 import com.example.altu.NewContact.ContactBar
+import com.example.altu.NewContact.ContactQr
 import com.example.altu.Profile.AvatarStore
 import com.example.altu.Profile.LocalUser
 import com.example.altu.Profile.SessionStore
@@ -84,6 +85,7 @@ import com.example.altu.Settings.Settings
 import com.example.altu.SoundBar.MusicController
 import com.example.altu.SoundBar.SoundBar
 import com.example.altu.ui.theme.AltuTheme
+import com.example.altu.ui.theme.GothicFont
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -266,6 +268,19 @@ fun Main() {
             }
             composable(Routes.NewContact.route) {
                 NewContact(
+                    qrPayload = remember(session, identity) {
+                        val me = session ?: return@remember null
+                        ContactQr(
+                            userId = me.userId,
+                            tag = me.tag,
+                            publicKey = identity.publicKey,
+                        ).toPayload()
+                    },
+                    onAddContact = { contact -> repository.addContact(contact) },
+                    onContactAdded = { chatId ->
+                        lastOpenChatId = chatId
+                        navController.navigate(Routes.Chat.create(chatId))
+                    },
                     onBackToChats = {
                         navController.navigate(Routes.Home.route) {
                             popUpTo(navController.graph.findStartDestination().id) { saveState = true }
@@ -386,9 +401,14 @@ fun Chat(
 
 @Composable
 fun NewContact(
+    qrPayload: String? = null,
+    onAddContact: suspend (ContactQr) -> Result<String> = { Result.failure(IllegalStateException()) },
+    onContactAdded: (String) -> Unit = {},
     onBackToChats: () -> Unit = {},
 ) {
+    val scope = rememberCoroutineScope()
     var selectedTab by remember { mutableStateOf(ContactTab.Qr) }
+    var scanHint by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -403,13 +423,44 @@ fun NewContact(
             contentAlignment = Alignment.Center,
         ) {
             when (selectedTab) {
-                ContactTab.Qr -> QrFrame()
-                ContactTab.Scan -> ScanFrame()
+                ContactTab.Qr -> QrFrame(payload = qrPayload)
+                ContactTab.Scan -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    ScanFrame(
+                        onQrScanned = { raw ->
+                            val contact = ContactQr.parse(raw)
+                            if (contact == null) {
+                                scanHint = "Invalid QR"
+                                return@ScanFrame
+                            }
+                            scope.launch {
+                                val result = onAddContact(contact)
+                                result.onSuccess { chatId ->
+                                    scanHint = "Added ${contact.tag}"
+                                    onContactAdded(chatId)
+                                }.onFailure { error ->
+                                    scanHint = error.message ?: "Cannot add contact"
+                                }
+                            }
+                        },
+                    )
+                    if (scanHint != null) {
+                        Text(
+                            text = scanHint.orEmpty(),
+                            color = Color(0xFFACADAC),
+                            fontFamily = GothicFont,
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(top = 12.dp),
+                        )
+                    }
+                }
             }
         }
         ContactTabBar(
             selectedTab = selectedTab,
-            onTabSelected = { selectedTab = it },
+            onTabSelected = {
+                selectedTab = it
+                scanHint = null
+            },
         )
     }
 }

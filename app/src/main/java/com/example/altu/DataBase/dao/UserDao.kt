@@ -33,6 +33,9 @@ interface UserDao {
     @Query("UPDATE users SET public_key = :publicKey WHERE user_id = :userId")
     suspend fun updatePublicKey(userId: String, publicKey: ByteArray)
 
+    @Query("UPDATE users SET tag = :tag, public_key = :publicKey WHERE user_id = :userId")
+    suspend fun updateContact(userId: String, tag: String, publicKey: ByteArray)
+
     @Query("DELETE FROM users")
     suspend fun deleteAll()
 }

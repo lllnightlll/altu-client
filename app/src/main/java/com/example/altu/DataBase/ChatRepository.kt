@@ -18,6 +18,7 @@ import com.example.altu.crypto.CryptoConstants
 import com.example.altu.crypto.Ed25519Identity
 import com.example.altu.crypto.MessageCipher
 import com.example.altu.crypto.SendEnvelope
+import com.example.altu.NewContact.ContactQr
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -113,6 +114,31 @@ class ChatRepository(
         users.deleteAll()
         avatarStore.deleteAll()
         sessionStore.clear()
+    }
+
+    suspend fun addContact(contact: ContactQr): Result<String> {
+        val meId = sessionStore.userId() ?: return Result.failure(IllegalStateException("Not registered"))
+        if (contact.userId == meId) {
+            return Result.failure(IllegalArgumentException("This is your QR"))
+        }
+        val existing = users.findById(contact.userId)
+        if (existing == null) {
+            val tagOwner = users.findByTag(contact.tag)
+            if (tagOwner != null && tagOwner.userId != contact.userId) {
+                return Result.failure(IllegalArgumentException("Tag already used"))
+            }
+            users.insert(
+                UserEntity(
+                    userId = contact.userId,
+                    tag = contact.tag,
+                    publicKey = contact.publicKey,
+                    createdAt = System.currentTimeMillis(),
+                ),
+            )
+        } else {
+            users.updateContact(contact.userId, contact.tag, contact.publicKey)
+        }
+        return Result.success(contact.userId)
     }
 
     suspend fun sendMessage(chatId: String, text: String): SendEnvelope? {
