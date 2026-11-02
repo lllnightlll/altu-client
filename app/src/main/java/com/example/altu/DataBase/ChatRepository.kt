@@ -16,6 +16,7 @@ import com.example.altu.api.AltuApiException
 import com.example.altu.api.dto.QueuedMessageDto
 import com.example.altu.crypto.CryptoConstants
 import com.example.altu.crypto.Ed25519Identity
+import com.example.altu.crypto.IdentityStore
 import com.example.altu.crypto.MessageCipher
 import com.example.altu.crypto.SendEnvelope
 import com.example.altu.NewContact.ContactQr
@@ -37,6 +38,7 @@ import java.time.OffsetDateTime
 class ChatRepository(
     private val database: AltuDatabase,
     private val identity: Ed25519Identity,
+    private val identityStore: IdentityStore,
     private val sessionStore: SessionStore,
     private val avatarStore: AvatarStore,
     private val api: AltuApi,
@@ -44,6 +46,7 @@ class ChatRepository(
     private val users = database.userDao()
     private val queue = database.messageQueueDao()
     private val cipher = MessageCipher(identity)
+    private val outbound = OutboundMessageSender(queue, api, identity)
     private val clock = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     fun observeChats(): Flow<List<ChatItem>> {
@@ -114,6 +117,7 @@ class ChatRepository(
         users.deleteAll()
         avatarStore.deleteAll()
         sessionStore.clear()
+        identityStore.clear()
     }
 
     suspend fun addContact(contact: ContactQr): Result<String> {
@@ -149,38 +153,18 @@ class ChatRepository(
         val now = System.currentTimeMillis()
         val aad = MessageCipher.associatedData(meId, peer.userId, peer.userId)
         val sealed = cipher.encrypt(body, peer.publicKey, aad)
-        val envelope = SendEnvelope.create(
-            identity = identity,
-            fromUserId = meId,
-            toUserId = peer.userId,
+        return outbound.persistAndDispatch(
+            meId = meId,
+            peerId = peer.userId,
             chatId = peer.userId,
             sealed = sealed,
-            timestampMillis = now,
+            createdAt = now,
         )
-        queue.insert(
-            QueuedMessageEntity(
-                messageId = UUID.randomUUID().toString(),
-                fromUserId = meId,
-                toUserId = peer.userId,
-                chatId = peer.userId,
-                nonce = sealed.nonce,
-                ciphertext = sealed.ciphertext,
-                createdAt = now,
-                deliveredAt = now,
-            ),
-        )
-        if (peer.userId != meId) {
-            try {
-                api.send(envelope)
-            } catch (_: Exception) {
-                // Локальная копия уже есть; повторная отправка — при следующем синке.
-            }
-        }
-        return envelope
     }
 
     suspend fun syncInbox() {
         val meId = sessionStore.userId() ?: return
+        outbound.flush(meId)
         val incoming = try {
             api.fetchMessages(meId, identity)
         } catch (_: Exception) {

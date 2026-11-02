@@ -66,6 +66,7 @@ import com.example.altu.DataBase.ChatRepository
 import com.example.altu.Auth.RegisterScreen
 import com.example.altu.api.AltuApi
 import com.example.altu.api.ServerConfig
+import com.example.altu.api.ServerUrlStore
 import com.example.altu.crypto.IdentityStore
 import com.example.altu.NewContact.ContactBar
 import com.example.altu.NewContact.ContactQr
@@ -113,12 +114,23 @@ fun Main() {
     val navController = rememberNavController()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val identity = remember { IdentityStore(context).loadOrCreate() }
+    val identityStore = remember { IdentityStore(context) }
+    var identityEpoch by remember { mutableIntStateOf(0) }
+    val identity = remember(identityEpoch) { identityStore.loadOrCreate() }
     val sessionStore = remember { SessionStore(context) }
     val avatarStore = remember { AvatarStore(context) }
-    val api = remember { AltuApi() }
-    val repository = remember {
-        ChatRepository(AltuDatabase.get(context), identity, sessionStore, avatarStore, api)
+    val serverUrlStore = remember { ServerUrlStore(context) }
+    val serverUrl by serverUrlStore.url.collectAsState()
+    val api = remember(serverUrl) { AltuApi(ServerConfig(serverUrl)) }
+    val repository = remember(identity, api) {
+        ChatRepository(
+            database = AltuDatabase.get(context),
+            identity = identity,
+            identityStore = identityStore,
+            sessionStore = sessionStore,
+            avatarStore = avatarStore,
+            api = api,
+        )
     }
     val session by sessionStore.session.collectAsState()
     val chats by repository.observeChats().collectAsState(initial = emptyList())
@@ -138,7 +150,7 @@ fun Main() {
         repository.ensureLocalUser()
     }
 
-    LaunchedEffect(session?.userId) {
+    LaunchedEffect(session?.userId, repository) {
         if (session?.userId == null) return@LaunchedEffect
         while (true) {
             repository.syncInbox()
@@ -251,6 +263,7 @@ fun Main() {
                     onDeleteAccount = {
                         scope.launch {
                             repository.deleteAccount()
+                            identityEpoch++
                             lastOpenChatId = null
                             registerError = null
                             navController.navigate(Routes.Register.route) {
@@ -259,6 +272,9 @@ fun Main() {
                             }
                         }
                     },
+                    serverUrl = serverUrl,
+                    serverUrlHint = ServerConfig.DEFAULT_BASE_URL,
+                    onServerUrlSave = { candidate -> serverUrlStore.save(candidate) },
                 )
             }
             composable(Routes.Privacy.route) {

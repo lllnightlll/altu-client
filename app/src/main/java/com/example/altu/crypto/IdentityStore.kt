@@ -29,6 +29,16 @@ class IdentityStore(
         return Ed25519Identity(seed)
     }
 
+    fun clear() {
+        runCatching { if (boxFile.exists()) boxFile.delete() }
+        runCatching {
+            val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
+            if (keyStore.containsAlias(ALIAS)) {
+                keyStore.deleteEntry(ALIAS)
+            }
+        }
+    }
+
     private fun wrap(seed: ByteArray): ByteArray {
         val cipher = Cipher.getInstance(TRANSFORMATION)
         cipher.init(Cipher.ENCRYPT_MODE, aesKey())

@@ -14,11 +14,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AutoDelete
+import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PersonRemove
@@ -34,7 +38,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.altu.SoundBar.randomShadow
@@ -47,10 +55,21 @@ fun Settings(
     onPrivacyClick: () -> Unit = {},
     onDeleteAllMessages: () -> Unit = {},
     onDeleteAccount: () -> Unit = {},
+    serverUrl: String = "",
+    serverUrlHint: String = "",
+    onServerUrlSave: (String) -> Boolean = { false },
 ) {
     var notificationsEnabled by remember { mutableStateOf(true) }
+    var urlDraft by remember(serverUrl) { mutableStateOf(serverUrl) }
+    var urlError by remember { mutableStateOf<String?>(null) }
     val accent = Color(0xFFACADAC)
     val danger = Color(0xFFEC407A)
+
+    fun saveServerUrl() {
+        val ok = onServerUrlSave(urlDraft)
+        urlError = if (ok) null else "http(s) host required"
+        if (ok) urlDraft = urlDraft.trim().trimEnd('/')
+    }
 
     Column(
         modifier = Modifier
@@ -65,6 +84,17 @@ fun Settings(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            SettingsUrlRow(
+                title = "Server",
+                value = urlDraft,
+                hint = serverUrlHint,
+                onValueChange = {
+                    urlDraft = it
+                    urlError = null
+                },
+                onSave = { saveServerUrl() },
+                error = urlError,
+            )
             SettingsToggleRow(
                 title = "Notifications",
                 icon = Icons.Filled.Notifications,
@@ -156,6 +186,88 @@ private fun SettingsLeadingIcon(
             tint = tint,
             modifier = Modifier.size(18.dp),
         )
+    }
+}
+
+@Composable
+private fun SettingsUrlRow(
+    title: String,
+    value: String,
+    hint: String,
+    onValueChange: (String) -> Unit,
+    onSave: () -> Unit,
+    error: String?,
+) {
+    val accent = Color(0xFFACADAC)
+    val danger = Color(0xFFEC407A)
+    val shape = RoundedCornerShape(16.dp)
+    val fieldStyle = TextStyle(
+        color = accent,
+        fontFamily = GothicFont,
+        fontSize = 18.sp,
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .randomShadow()
+            .steppedBorder(width = 1.dp, color = accent, shape = shape, fillColor = Color(0xFF070809))
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SettingsLeadingIcon(icon = Icons.Filled.Dns, tint = accent)
+            Spacer(modifier = Modifier.size(12.dp))
+            Text(
+                text = title,
+                color = accent,
+                fontFamily = GothicFont,
+                fontSize = 22.sp,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = "Save",
+                color = accent.copy(alpha = 0.8f),
+                fontFamily = GothicFont,
+                fontSize = 16.sp,
+                modifier = Modifier
+                    .clickable(onClick = onSave)
+                    .padding(start = 8.dp, top = 4.dp, bottom = 4.dp),
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            singleLine = true,
+            cursorBrush = SolidColor(accent),
+            textStyle = fieldStyle,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Uri,
+                imeAction = ImeAction.Done,
+            ),
+            keyboardActions = KeyboardActions(onDone = { onSave() }),
+            modifier = Modifier.fillMaxWidth(),
+            decorationBox = { inner ->
+                Box(contentAlignment = Alignment.CenterStart) {
+                    if (value.isEmpty() && hint.isNotBlank()) {
+                        Text(
+                            text = hint,
+                            style = fieldStyle.copy(color = accent.copy(alpha = 0.45f)),
+                        )
+                    }
+                    inner()
+                }
+            },
+        )
+        if (error != null) {
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = error,
+                color = danger,
+                fontFamily = GothicFont,
+                fontSize = 16.sp,
+            )
+        }
     }
 }
 

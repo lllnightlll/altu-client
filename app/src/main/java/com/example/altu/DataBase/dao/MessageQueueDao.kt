@@ -27,6 +27,18 @@ interface MessageQueueDao {
 
     @Query(
         """
+        SELECT * FROM messages_queue
+        WHERE from_user_id = :fromUserId
+          AND to_user_id != :fromUserId
+          AND delivered_at IS NULL
+        ORDER BY created_at ASC
+        LIMIT :limit
+        """
+    )
+    suspend fun findPendingOutgoing(fromUserId: String, limit: Int): List<QueuedMessageEntity>
+
+    @Query(
+        """
         UPDATE messages_queue
         SET delivered_at = :deliveredAt
         WHERE message_id = :messageId
@@ -35,6 +47,17 @@ interface MessageQueueDao {
         """
     )
     suspend fun markDelivered(userId: String, messageId: String, deliveredAt: Long): Int
+
+    @Query(
+        """
+        UPDATE messages_queue
+        SET delivered_at = :sentAt
+        WHERE message_id = :messageId
+          AND from_user_id = :fromUserId
+          AND delivered_at IS NULL
+        """
+    )
+    suspend fun markOutgoingSent(fromUserId: String, messageId: String, sentAt: Long): Int
 
     @Query(
         """
