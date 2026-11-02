@@ -335,6 +335,11 @@ fun Chat(
     val scope = rememberCoroutineScope()
     val chat by repository.observeChat(chatId.orEmpty()).collectAsState(initial = null)
     val messages by repository.observeMessages(chatId.orEmpty()).collectAsState(initial = emptyList())
+
+    LaunchedEffect(chatId) {
+        val id = chatId ?: return@LaunchedEffect
+        repository.markChatRead(id)
+    }
     var messageSearchVisible by remember { mutableStateOf(false) }
     var messageQuery by remember { mutableStateOf("") }
     var findNextToken by remember { mutableIntStateOf(0) }

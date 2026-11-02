@@ -36,6 +36,18 @@ interface MessageQueueDao {
     )
     suspend fun markDelivered(userId: String, messageId: String, deliveredAt: Long): Int
 
+    @Query(
+        """
+        UPDATE messages_queue
+        SET delivered_at = :deliveredAt
+        WHERE chat_id = :chatId
+          AND to_user_id = :userId
+          AND from_user_id != :userId
+          AND delivered_at IS NULL
+        """
+    )
+    suspend fun markChatRead(chatId: String, userId: String, deliveredAt: Long): Int
+
     @Query("DELETE FROM messages_queue WHERE delivered_at IS NOT NULL")
     suspend fun deleteDelivered(): Int
 

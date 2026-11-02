@@ -231,6 +231,12 @@ class ChatRepository(
         return System.currentTimeMillis()
     }
 
+    suspend fun markChatRead(chatId: String) {
+        val meId = sessionStore.userId() ?: return
+        if (chatId.isBlank()) return
+        queue.markChatRead(chatId, meId, System.currentTimeMillis())
+    }
+
     suspend fun deleteAllMessages() {
         queue.deleteAll()
     }
